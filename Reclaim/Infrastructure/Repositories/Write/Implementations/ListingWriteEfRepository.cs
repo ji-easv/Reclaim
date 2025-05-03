@@ -6,7 +6,7 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class ListingWriteEfRepository(PostgresDbContext dbContext) : IListingWriteRepository
 {
-    public Task<ListingWriteEntity?> GetByIdAsync(int id)
+    public Task<ListingWriteEntity?> GetByIdAsync(string id)
     {
         throw new NotImplementedException();
     }
@@ -26,7 +26,7 @@ public class ListingWriteEfRepository(PostgresDbContext dbContext) : IListingWri
         throw new NotImplementedException();
     }
 
-    public Task<bool> DeleteAsync(int id)
+    public Task<bool> DeleteAsync(string id)
     {
         throw new NotImplementedException();
     }

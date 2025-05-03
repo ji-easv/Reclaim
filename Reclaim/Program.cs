@@ -1,7 +1,10 @@
 using Reclaim.Application.Extensions;
 using Reclaim.Presentation.Apis;
+using Reclaim.Presentation.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
