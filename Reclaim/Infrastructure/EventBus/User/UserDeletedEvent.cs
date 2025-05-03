@@ -2,4 +2,5 @@
 
 public class UserDeletedEvent : IDomainEvent
 {
+    public required string UserId { get; set; }
 }

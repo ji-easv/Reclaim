@@ -1,4 +1,6 @@
-﻿using Reclaim.Infrastructure.EventBus.EventBus;
+﻿using Reclaim.Domain.Mappers;
+using Reclaim.Infrastructure.EventBus.EventBus;
+using Reclaim.Infrastructure.Repositories.Read.Interfaces;
 
 namespace Reclaim.Infrastructure.EventBus.User;
 
@@ -20,16 +22,26 @@ public class UserEventsHandler(IDomainEventBus domainEventBus, IServiceProvider 
 
     private async Task HandleUserCreatedEvent(UserCreatedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var readRepository = scope.ServiceProvider.GetService<IUserReadRepository>();
+        var readEntity = arg.UserWriteEntity.ToReadEntity();
+        await readRepository.AddAsync(readEntity);
     }
 
     private async Task HandleUserUpdatedEvent(UserUpdatedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var readRepository = scope.ServiceProvider.GetService<IUserReadRepository>();
+        var readEntity = arg.UserWriteEntity.ToReadEntity();
+        await readRepository.UpdateAsync(readEntity);
     }
 
     private async Task HandleUserDeletedEvent(UserDeletedEvent arg)
-    {
-        throw new NotImplementedException();
+    {       
+        using var scope = serviceProvider.CreateScope();
+        var readRepository = scope.ServiceProvider.GetService<IUserReadRepository>();
+        var existingEntity = await readRepository.GetByIdAsync(arg.UserId);
+        existingEntity!.IsDeleted = true;
+        await readRepository.UpdateAsync(existingEntity);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Reclaim.Domain.Entities.Write;
+﻿using Microsoft.EntityFrameworkCore;
+using Reclaim.Domain.Entities.Write;
 using Reclaim.Infrastructure.Contexts;
 using Reclaim.Infrastructure.Repositories.Write.Interfaces;
 
@@ -6,28 +7,46 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepository
 {
-    public Task<UserWriteEntity?> GetByIdAsync(string id)
+    public async Task<UserWriteEntity?> GetByIdAsync(string id)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<UserWriteEntity>> GetAllAsync()
+    public async Task<IEnumerable<UserWriteEntity>> GetAllAsync()
     {
         throw new NotImplementedException();
     }
 
-    public Task<UserWriteEntity> AddAsync(UserWriteEntity entity)
+    public async Task<UserWriteEntity> AddAsync(UserWriteEntity entity)
     {
-        throw new NotImplementedException();
+        var result = await dbContext.Users.AddAsync(entity);
+        await dbContext.SaveChangesAsync();
+        return result.Entity;
     }
 
-    public Task<UserWriteEntity> UpdateAsync(UserWriteEntity entity)
+    public async Task<UserWriteEntity> UpdateAsync(UserWriteEntity entity)
     {
-        throw new NotImplementedException();
+        var result = dbContext.Users.Update(entity);
+        await dbContext.SaveChangesAsync();
+        return result.Entity;
     }
 
-    public Task<bool> DeleteAsync(string id)
+    public async Task<bool> DeleteAsync(string id)
     {
-        throw new NotImplementedException();
+        var user = await dbContext.Users.FindAsync(id);
+        if (user == null)
+        {
+            return false;
+        }
+
+        dbContext.Users.Remove(user);
+        await dbContext.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<UserWriteEntity?> GetByEmailAsync(string email)
+    {
+        return await dbContext.Users
+            .FirstOrDefaultAsync(x => x.Email == email);
     }
 }
