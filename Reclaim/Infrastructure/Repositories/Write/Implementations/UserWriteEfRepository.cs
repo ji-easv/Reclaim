@@ -6,7 +6,7 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepository
 {
-    public Task<UserWriteEntity?> GetByIdAsync(int id)
+    public Task<UserWriteEntity?> GetByIdAsync(string id)
     {
         throw new NotImplementedException();
     }
@@ -26,7 +26,7 @@ public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepo
         throw new NotImplementedException();
     }
 
-    public Task<bool> DeleteAsync(int id)
+    public Task<bool> DeleteAsync(string id)
     {
         throw new NotImplementedException();
     }

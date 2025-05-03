@@ -13,23 +13,26 @@ public static class UserApi
     {
         var api = app
             .MapGroup("/api/v1/user")
-            .WithTags("User")
-            .WithName("UserApi");
+            .WithTags("User");
         
-        api.MapPost("/create", CreateUserAsync);
+        api.MapPost("/", CreateUserAsync)
+            .WithName("CreateUser");
         
-        api.MapPut("/update", UpdateUserAsync);
+        api.MapPut("/", UpdateUserAsync)
+            .WithName("UpdateUser");
         
-        api.MapDelete("/delete/{userId}", DeleteUserAsync);
+        api.MapDelete("/{userId:length(24)}", DeleteUserAsync)
+            .WithName("DeleteUser");
         
-        api.MapGet("/{userId}", GetUserByIdAsync);
+        api.MapGet("/{userId:length(24)}", GetUserByIdAsync)
+            .WithName("GetUserById");
         
         return api;
     }
     
     private static async Task<Results<Ok<UserGetDto>, ProblemHttpResult>> GetUserByIdAsync(
         [FromServices] IUserService userService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var result = await userService.GetUserByIdAsync(new GetUserByIdQuery
@@ -59,7 +62,7 @@ public static class UserApi
     
     private static async Task<Results<Ok<UserGetDto>, ProblemHttpResult>> DeleteUserAsync(
         [FromServices] IUserService userService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var result = await userService.DeleteUserAsync(new DeleteUserCommand

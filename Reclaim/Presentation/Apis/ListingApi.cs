@@ -13,20 +13,25 @@ public static class ListingApi
     {
         var api = app
             .MapGroup("/api/v1/listing")
-            .WithTags("Listing")
-            .WithName("ListingApi");
+            .WithTags("Listing");
         
-        api.MapPost("/create", CreateListingAsync);
+        api.MapPost("/", CreateListingAsync)
+            .WithName("CreateListing");
 
-        api.MapPut("/update", UpdateListingAsync);
+        api.MapPut("/", UpdateListingAsync)
+            .WithName("UpdateListing");
 
-        api.MapDelete("/delete/{listingId}", DeleteListingAsync);
+        api.MapDelete("/{listingId:length(24)}", DeleteListingAsync)
+            .WithName("DeleteListing");
 
-        api.MapGet("/{listingId}", GetListingByIdAsync);
+        api.MapGet("/{listingId:length(24)}", GetListingByIdAsync)
+            .WithName("GetListingById");
         
-        api.MapGet("/user/{userId}", GetListingsByUserIdAsync);
+        api.MapGet("/user/{userId:length(24)}", GetListingsByUserIdAsync)
+            .WithName("GetListingsByUserId");
         
-        api.MapGet("/latest", GetLatestListingsAsync);
+        api.MapGet("/latest", GetLatestListingsAsync)
+            .WithName("GetLatestListings");
         
         return api;
     }
@@ -51,7 +56,7 @@ public static class ListingApi
     
     private static async Task<Results<Ok<ListingGetDto>, ProblemHttpResult>> DeleteListingAsync(
         [FromServices] IListingService listingService,
-        [FromRoute] string listingId // TODO: Replace with actual type
+        [FromRoute] string listingId
     )
     {
         var result = await listingService.DeleteListingAsync(new DeleteListingCommand
@@ -63,7 +68,7 @@ public static class ListingApi
     
     private static async Task<Results<Ok<ListingGetDto>, ProblemHttpResult>> GetListingByIdAsync(
         [FromServices] IListingService listingService,
-        [FromRoute] string listingId // TODO: Replace with actual type
+        [FromRoute] string listingId
     )
     {
         var query = new GetListingByIdQuery
@@ -76,7 +81,7 @@ public static class ListingApi
     
     private static async Task<Results<Ok<List<ListingGetDto>>, ProblemHttpResult>> GetListingsByUserIdAsync(
         [FromServices] IListingService listingService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var query = new GetListingsByUserIdQuery

@@ -13,18 +13,22 @@ public static class ReviewApi
     {
         var api = app
             .MapGroup("/api/v1/review")
-            .WithTags("Review")
-            .WithName("ReviewApi");
+            .WithTags("Review");
         
-        api.MapPost("/create", CreateReviewAsync);
+        api.MapPost("/", CreateReviewAsync)
+            .WithName("CreateReview");
         
-        api.MapPut("/update", UpdateReviewAsync);
+        api.MapPut("/", UpdateReviewAsync)
+            .WithName("UpdateReview");
         
-        api.MapDelete("/delete/{reviewId}", DeleteReviewAsync);
+        api.MapDelete("/{reviewId:length(24)}", DeleteReviewAsync)
+            .WithName("DeleteReview");
         
-        api.MapGet("/user/{userId}", GetReviewsWrittenByUserAsync);
+        api.MapGet("/user/{userId:length(24)}", GetReviewsWrittenByUserAsync)
+            .WithName("GetReviewsWrittenByUser");
         
-        api.MapGet("/seller/{userId}", GetReviewsForSellerAsync);
+        api.MapGet("/seller/{userId:length(24)}", GetReviewsForSellerAsync)
+            .WithName("GetReviewsForSeller");
         
         return api;
     }
@@ -49,7 +53,7 @@ public static class ReviewApi
     
     private static async Task<Results<Ok<ReviewGetDto>, ProblemHttpResult>> DeleteReviewAsync(
         [FromServices] IReviewService reviewService,
-        [FromRoute] string reviewId // TODO: Replace with actual type
+        [FromRoute] string reviewId
     )
     {
         var result = await reviewService.DeleteReviewAsync(new DeleteReviewCommand
@@ -61,7 +65,7 @@ public static class ReviewApi
     
     private static async Task<Results<Ok<List<ReviewGetDto>>, ProblemHttpResult>> GetReviewsWrittenByUserAsync(
         [FromServices] IReviewService reviewService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var result = await reviewService.GetReviewsWrittenByUserAsync(new GetReviewsWrittenByUserId
@@ -73,7 +77,7 @@ public static class ReviewApi
     
     private static async Task<Results<Ok<List<ReviewGetDto>>, ProblemHttpResult>> GetReviewsForSellerAsync(
         [FromServices] IReviewService reviewService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var result = await reviewService.GetReviewsForSellerAsync(new GetReviewsForSellerQuery
