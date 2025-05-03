@@ -6,7 +6,7 @@ namespace Reclaim.Domain.Entities.Write;
 public class UserWriteEntity
 {
     [MaxLength(24)]
-    public required string Id { get; set; } = ObjectId.GenerateNewId().ToString();
+    public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
     
     [MaxLength(128)]
     public required string Name { get; set; }
