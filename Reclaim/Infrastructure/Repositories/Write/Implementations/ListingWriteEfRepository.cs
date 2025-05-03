@@ -30,9 +30,4 @@ public class ListingWriteEfRepository(PostgresDbContext dbContext) : IListingWri
     {
         throw new NotImplementedException();
     }
-
-    public Task<bool> SaveChangesAsync()
-    {
-        throw new NotImplementedException();
-    }
 }

@@ -30,9 +30,4 @@ public class OrderWriteEfRepository(PostgresDbContext dbContext) : IOrderWriteRe
     {
         throw new NotImplementedException();
     }
-
-    public Task<bool> SaveChangesAsync()
-    {
-        throw new NotImplementedException();
-    }
 }

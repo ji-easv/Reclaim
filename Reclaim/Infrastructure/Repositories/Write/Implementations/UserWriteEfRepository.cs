@@ -30,9 +30,4 @@ public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepo
     {
         throw new NotImplementedException();
     }
-
-    public Task<bool> SaveChangesAsync()
-    {
-        throw new NotImplementedException();
-    }
 }

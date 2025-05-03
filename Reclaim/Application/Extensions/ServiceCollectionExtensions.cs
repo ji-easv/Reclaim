@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Minio;
 using Reclaim.Application.Commands.Listing;
 using Reclaim.Application.Commands.Order;
 using Reclaim.Application.Commands.Review;
@@ -12,6 +13,7 @@ using Reclaim.Application.Services.Interfaces;
 using Reclaim.Infrastructure.Contexts;
 using Reclaim.Infrastructure.Repositories.Read.Implementations;
 using Reclaim.Infrastructure.Repositories.Read.Interfaces;
+using Reclaim.Infrastructure.Repositories.S3;
 using Reclaim.Infrastructure.Repositories.Write.Implementations;
 using Reclaim.Infrastructure.Repositories.Write.Interfaces;
 
@@ -49,6 +51,20 @@ public static class ServiceCollectionExtensions
         {
             options.UseNpgsql(postgresConnectionString);
         });
+        
+        services.AddSingleton<MinIoContext>(_ =>
+        {
+            var minIoConfig = configuration.GetSection("MinIo");
+            var minIoClient = new MinioClient()
+                .WithEndpoint(minIoConfig["Endpoint"] ?? throw new ArgumentException("MinIO endpoint is null"))
+                .WithCredentials(
+                    minIoConfig["AccessKey"] ?? throw new ArgumentException("MinIO access key is null"),
+                    minIoConfig["SecretKey"] ?? throw new ArgumentException("MinIO secret key is null"))
+                .Build();
+
+            return new MinIoContext(minIoClient);
+        });
+        
     }
 
     public static void AddRepositories(this IServiceCollection services)
@@ -64,6 +80,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IListingWriteRepository, ListingWriteEfRepository>();
         services.AddScoped<IOrderWriteRepository, OrderWriteEfRepository>();
         services.AddScoped<IReviewWriteRepository, ReviewWriteEfRepository>();
+        
+        // S3 Repositories
+        services.AddScoped<IObjectStorageRepository, MinIoObjectStorageRepository>();
         
         // Cache Repositories
         /* TODO: uncomment when Redis is implemented
