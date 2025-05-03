@@ -13,20 +13,25 @@ public static class ListingApi
     {
         var api = app
             .MapGroup("/api/v1/listing")
-            .WithTags("Listing")
-            .WithName("ListingApi");
+            .WithTags("Listing");
         
-        api.MapPost("/", CreateListingAsync);
+        api.MapPost("/", CreateListingAsync)
+            .WithName("CreateListing");
 
-        api.MapPut("/", UpdateListingAsync);
+        api.MapPut("/", UpdateListingAsync)
+            .WithName("UpdateListing");
 
-        api.MapDelete("/{listingId:length(24)}", DeleteListingAsync);
+        api.MapDelete("/{listingId:length(24)}", DeleteListingAsync)
+            .WithName("DeleteListing");
 
-        api.MapGet("/{listingId:length(24)}", GetListingByIdAsync);
+        api.MapGet("/{listingId:length(24)}", GetListingByIdAsync)
+            .WithName("GetListingById");
         
-        api.MapGet("/user/{userId:length(24)}", GetListingsByUserIdAsync);
+        api.MapGet("/user/{userId:length(24)}", GetListingsByUserIdAsync)
+            .WithName("GetListingsByUserId");
         
-        api.MapGet("/latest", GetLatestListingsAsync);
+        api.MapGet("/latest", GetLatestListingsAsync)
+            .WithName("GetLatestListings");
         
         return api;
     }

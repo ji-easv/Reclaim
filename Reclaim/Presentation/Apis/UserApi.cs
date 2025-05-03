@@ -13,16 +13,19 @@ public static class UserApi
     {
         var api = app
             .MapGroup("/api/v1/user")
-            .WithTags("User")
-            .WithName("UserApi");
+            .WithTags("User");
         
-        api.MapPost("/", CreateUserAsync);
+        api.MapPost("/", CreateUserAsync)
+            .WithName("CreateUser");
         
-        api.MapPut("/", UpdateUserAsync);
+        api.MapPut("/", UpdateUserAsync)
+            .WithName("UpdateUser");
         
-        api.MapDelete("/{userId:length(24)}", DeleteUserAsync);
+        api.MapDelete("/{userId:length(24)}", DeleteUserAsync)
+            .WithName("DeleteUser");
         
-        api.MapGet("/{userId:length(24)}", GetUserByIdAsync);
+        api.MapGet("/{userId:length(24)}", GetUserByIdAsync)
+            .WithName("GetUserById");
         
         return api;
     }

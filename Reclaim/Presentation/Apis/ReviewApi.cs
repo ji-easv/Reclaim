@@ -13,18 +13,22 @@ public static class ReviewApi
     {
         var api = app
             .MapGroup("/api/v1/review")
-            .WithTags("Review")
-            .WithName("ReviewApi");
+            .WithTags("Review");
         
-        api.MapPost("/", CreateReviewAsync);
+        api.MapPost("/", CreateReviewAsync)
+            .WithName("CreateReview");
         
-        api.MapPut("/", UpdateReviewAsync);
+        api.MapPut("/", UpdateReviewAsync)
+            .WithName("UpdateReview");
         
-        api.MapDelete("/{reviewId:length(24)}", DeleteReviewAsync);
+        api.MapDelete("/{reviewId:length(24)}", DeleteReviewAsync)
+            .WithName("DeleteReview");
         
-        api.MapGet("/user/{userId:length(24)}", GetReviewsWrittenByUserAsync);
+        api.MapGet("/user/{userId:length(24)}", GetReviewsWrittenByUserAsync)
+            .WithName("GetReviewsWrittenByUser");
         
-        api.MapGet("/seller/{userId:length(24)}", GetReviewsForSellerAsync);
+        api.MapGet("/seller/{userId:length(24)}", GetReviewsForSellerAsync)
+            .WithName("GetReviewsForSeller");
         
         return api;
     }

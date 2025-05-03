@@ -13,18 +13,22 @@ public static class OrderApi
     {
         var api = app
             .MapGroup("/api/v1/order")
-            .WithTags("Order")
-            .WithName("OrderApi");
+            .WithTags("Order");
         
-        api.MapPost("/", CreateOrderAsync);
+        api.MapPost("/", CreateOrderAsync)
+            .WithName("CreateOrder");
         
-        api.MapPut("/", UpdateOrderAsync);
+        api.MapPut("/", UpdateOrderAsync)
+            .WithName("UpdateOrder");
         
-        api.MapDelete("/{orderId:length(24)}", DeleteOrderAsync);
+        api.MapDelete("/{orderId:length(24)}", DeleteOrderAsync)
+            .WithName("DeleteOrder");
         
-        api.MapGet("/{orderId:length(24)}", GetOrderByIdAsync);
+        api.MapGet("/{orderId:length(24)}", GetOrderByIdAsync)
+            .WithName("GetOrderById");
         
-        api.MapGet("/user/{userId:length(24)}", GetOrdersByUserIdAsync);
+        api.MapGet("/user/{userId:length(24)}", GetOrdersByUserIdAsync)
+            .WithName("GetOrdersByUserId");
 
         return api;
     }
