@@ -1,4 +1,4 @@
-﻿using Reclaim.Infrastructure.EventBus;
+﻿using Reclaim.Infrastructure.EventBus.EventBus;
 using Reclaim.Infrastructure.EventBus.Listing;
 using Reclaim.Infrastructure.EventBus.Order;
 using Reclaim.Infrastructure.EventBus.Review;

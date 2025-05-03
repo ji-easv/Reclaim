@@ -1,4 +1,4 @@
-﻿namespace Reclaim.Infrastructure.EventBus;
+﻿namespace Reclaim.Infrastructure.EventBus.EventBus;
 
 public interface IDomainEventBus
 {

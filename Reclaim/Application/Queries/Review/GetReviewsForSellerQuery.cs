@@ -4,5 +4,4 @@ namespace Reclaim.Application.Queries.Review;
 
 public class GetReviewsForSellerQuery : IQuery<IEnumerable<ReviewGetDto>>
 {
-    
 }

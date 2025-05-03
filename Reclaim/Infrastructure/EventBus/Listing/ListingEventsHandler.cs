@@ -1,31 +1,16 @@
-﻿using Reclaim.Infrastructure.EventBus.Events.Listing;
+﻿using Reclaim.Infrastructure.EventBus.EventBus;
 
 namespace Reclaim.Infrastructure.EventBus.Listing;
 
 public class ListingEventsHandler(IDomainEventBus domainEventBus, IServiceProvider serviceProvider) : IEventHandler
 {
-    private async Task HandleListingCreatedEvent(ListingCreatedEvent arg)
-    {
-        throw new NotImplementedException();
-    }
-    
-    private Task HandleListingUpdatedEvent(ListingUpdatedEvent arg)
-    {
-        throw new NotImplementedException();
-    }
-    
-    private Task HandleListingDeletedEvent(ListingDeletedEvent arg)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         await domainEventBus.Subscribe<ListingCreatedEvent>(HandleListingCreatedEvent);
         await domainEventBus.Subscribe<ListingUpdatedEvent>(HandleListingUpdatedEvent);
         await domainEventBus.Subscribe<ListingDeletedEvent>(HandleListingDeletedEvent);
     }
-    
+
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         await domainEventBus.Unsubscribe<ListingCreatedEvent>(HandleListingCreatedEvent);
@@ -33,4 +18,18 @@ public class ListingEventsHandler(IDomainEventBus domainEventBus, IServiceProvid
         await domainEventBus.Unsubscribe<ListingDeletedEvent>(HandleListingDeletedEvent);
     }
 
+    private async Task HandleListingCreatedEvent(ListingCreatedEvent arg)
+    {
+        throw new NotImplementedException();
+    }
+
+    private Task HandleListingUpdatedEvent(ListingUpdatedEvent arg)
+    {
+        throw new NotImplementedException();
+    }
+
+    private Task HandleListingDeletedEvent(ListingDeletedEvent arg)
+    {
+        throw new NotImplementedException();
+    }
 }

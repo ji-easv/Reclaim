@@ -11,7 +11,8 @@ using Reclaim.Application.Queries.User;
 using Reclaim.Application.Services.Implementations;
 using Reclaim.Application.Services.Interfaces;
 using Reclaim.Infrastructure.Contexts;
-using Reclaim.Infrastructure.Repositories.Read.Implementations;
+using Reclaim.Infrastructure.Repositories.Read.Implementations.MongoDb;
+using Reclaim.Infrastructure.Repositories.Read.Implementations.Redis;
 using Reclaim.Infrastructure.Repositories.Read.Interfaces;
 using Reclaim.Infrastructure.Repositories.S3;
 using Reclaim.Infrastructure.Repositories.Write.Implementations;
@@ -39,19 +40,20 @@ public static class ServiceCollectionExtensions
     public static void AddDbContexts(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionStringSection = configuration.GetSection("ConnectionStrings");
-        var mongoDbConnectionString = connectionStringSection["MongoDb"] ?? throw new ArgumentException("MongoDB connection string is null");
-        var mongoDbDatabaseName = connectionStringSection["MongoDbDatabaseName"] ?? throw new ArgumentException("MongoDB database name is null");
+        var mongoDbConnectionString = connectionStringSection["MongoDb"] ??
+                                      throw new ArgumentException("MongoDB connection string is null");
+        var mongoDbDatabaseName = connectionStringSection["MongoDbDatabaseName"] ??
+                                  throw new ArgumentException("MongoDB database name is null");
         services.AddSingleton<MongoDbContext>(_ => new MongoDbContext(mongoDbConnectionString, mongoDbDatabaseName));
-        
-        var redisConnectionString = connectionStringSection["Redis"] ?? throw new ArgumentException("Redis connection string is null");
+
+        var redisConnectionString = connectionStringSection["Redis"] ??
+                                    throw new ArgumentException("Redis connection string is null");
         services.AddSingleton<RedisContext>(_ => new RedisContext(redisConnectionString));
-        
-        var postgresConnectionString = connectionStringSection["Postgres"] ?? throw new ArgumentException("Postgres connection string is null");
-        services.AddDbContext<PostgresDbContext>(options =>
-        {
-            options.UseNpgsql(postgresConnectionString);
-        });
-        
+
+        var postgresConnectionString = connectionStringSection["Postgres"] ??
+                                       throw new ArgumentException("Postgres connection string is null");
+        services.AddDbContext<PostgresDbContext>(options => { options.UseNpgsql(postgresConnectionString); });
+
         services.AddSingleton<MinIoContext>(_ =>
         {
             var minIoConfig = configuration.GetSection("MinIo");
@@ -64,34 +66,49 @@ public static class ServiceCollectionExtensions
 
             return new MinIoContext(minIoClient);
         });
-        
     }
 
     public static void AddRepositories(this IServiceCollection services)
     {
         // Read Repositories
         services.AddScoped<IUserReadRepository, UserReadMongoRepository>();
-        services.AddScoped<IListingReadRepository, ListingReadMongoRepository>();
-        services.AddScoped<IOrderReadRepository, OrderReadMongoRepository>();
         services.AddScoped<IReviewReadRepository, ReviewReadMongoRepository>();
-        
+
+        // Use the decorator pattern for wrapping the read repository with Redis caching
+        services.AddScoped<ListingReadMongoRepository>();
+        services.AddScoped<IListingReadRepository>(provider =>
+        {
+            var mongoRepository = provider.GetService<ListingReadMongoRepository>()
+                                  ?? throw new ArgumentNullException(nameof(ListingReadMongoRepository),
+                                      "Mongo repository is null");
+
+            var redisContext = provider.GetService<RedisContext>()
+                               ?? throw new ArgumentNullException(nameof(RedisContext), "Redis context is null");
+
+            return new ListingReadRedisRepository(redisContext, TimeSpan.FromSeconds(30), mongoRepository);
+        });
+
+        services.AddScoped<OrderReadMongoRepository>();
+        services.AddScoped<IOrderReadRepository>(provider =>
+        {
+            var mongoRepository = provider.GetService<OrderReadMongoRepository>()
+                                  ?? throw new ArgumentNullException(nameof(ListingReadMongoRepository),
+                                      "Mongo repository is null");
+
+            var redisContext = provider.GetService<RedisContext>()
+                               ?? throw new ArgumentNullException(nameof(RedisContext), "Redis context is null");
+
+            return new OrderReadRedisRepository(redisContext, TimeSpan.FromSeconds(30), mongoRepository);
+        });
+
         // Write Repositories
         services.AddScoped<IUserWriteRepository, UserWriteEfRepository>();
         services.AddScoped<IListingWriteRepository, ListingWriteEfRepository>();
         services.AddScoped<IOrderWriteRepository, OrderWriteEfRepository>();
         services.AddScoped<IReviewWriteRepository, ReviewWriteEfRepository>();
-        
+
         // S3 Repositories
         services.AddScoped<IObjectStorageRepository, MinIoObjectStorageRepository>();
-        
-        // Cache Repositories
-        /* TODO: uncomment when Redis is implemented
-         services.AddScoped<IPostCacheRepository, RedisPostCacheRepository>(provider =>
-       {
-           var redisContext = provider.GetService<RedisContext>();
-           return new RedisPostCacheRepository(redisContext, TimeSpan.FromSeconds(30));
-       });
-        */
     }
 
     public static void AddServices(this IServiceCollection services)

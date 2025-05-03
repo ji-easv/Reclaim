@@ -2,9 +2,9 @@
 
 namespace Reclaim.Application.Queries.Listing;
 
-public class ListingQueryHandler : 
-    IQueryHandler<GetLatestListingsQuery, IEnumerable<ListingGetDto>>, 
-    IQueryHandler<GetListingsByUserIdQuery, IEnumerable<ListingGetDto>>, 
+public class ListingQueryHandler :
+    IQueryHandler<GetLatestListingsQuery, IEnumerable<ListingGetDto>>,
+    IQueryHandler<GetListingsByUserIdQuery, IEnumerable<ListingGetDto>>,
     IQueryHandler<GetListingByIdQuery, ListingGetDto>
 {
     public Task<IEnumerable<ListingGetDto>> HandleAsync(GetLatestListingsQuery query)
@@ -12,12 +12,12 @@ public class ListingQueryHandler :
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<ListingGetDto>> HandleAsync(GetListingsByUserIdQuery query)
+    public Task<ListingGetDto> HandleAsync(GetListingByIdQuery query)
     {
         throw new NotImplementedException();
     }
 
-    public Task<ListingGetDto> HandleAsync(GetListingByIdQuery query)
+    public Task<IEnumerable<ListingGetDto>> HandleAsync(GetListingsByUserIdQuery query)
     {
         throw new NotImplementedException();
     }

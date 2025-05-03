@@ -9,29 +9,17 @@ public class PostgresDbContext(DbContextOptions<PostgresDbContext> options) : Db
     public DbSet<ListingWriteEntity> Listings { get; set; }
     public DbSet<OrderWriteEntity> Orders { get; set; }
     public DbSet<ReviewWriteEntity> Reviews { get; set; }
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<UserWriteEntity>(entity =>
-        {
-           
-        });
-        
-        modelBuilder.Entity<ListingWriteEntity>(entity =>
-        {
+        modelBuilder.Entity<UserWriteEntity>(entity => { });
 
-        });
-        
-        modelBuilder.Entity<OrderWriteEntity>(entity =>
-        {
+        modelBuilder.Entity<ListingWriteEntity>(entity => { });
 
-        });
-        
-        modelBuilder.Entity<ReviewWriteEntity>(entity =>
-        {
+        modelBuilder.Entity<OrderWriteEntity>(entity => { });
 
-        });
-        
+        modelBuilder.Entity<ReviewWriteEntity>(entity => { });
+
         base.OnModelCreating(modelBuilder);
     }
 }

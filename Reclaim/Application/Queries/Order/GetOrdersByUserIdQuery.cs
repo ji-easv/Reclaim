@@ -4,5 +4,4 @@ namespace Reclaim.Application.Queries.Order;
 
 public class GetOrdersByUserIdQuery : IQuery<IEnumerable<OrderGetDto>>
 {
-    
 }

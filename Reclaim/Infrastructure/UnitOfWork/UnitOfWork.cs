@@ -7,9 +7,10 @@ namespace Reclaim.Infrastructure.UnitOfWork;
 
 public class UnitOfWork(PostgresDbContext context) : IUnitOfWork, IDisposable
 {
-    public async Task SaveChangesAsync()
+    public void Dispose()
     {
-        await context.SaveChangesAsync();
+        context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     public async Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel isolationLevel)
@@ -28,9 +29,8 @@ public class UnitOfWork(PostgresDbContext context) : IUnitOfWork, IDisposable
         await context.Database.RollbackTransactionAsync();
     }
 
-    public void Dispose()
+    public async Task SaveChangesAsync()
     {
-        context.Dispose();
-        GC.SuppressFinalize(this);
+        await context.SaveChangesAsync();
     }
-}   
+}

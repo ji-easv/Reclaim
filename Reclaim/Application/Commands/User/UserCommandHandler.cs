@@ -1,5 +1,5 @@
 ﻿using Reclaim.Domain.Entities.Write;
-using Reclaim.Infrastructure.EventBus;
+using Reclaim.Infrastructure.EventBus.EventBus;
 
 namespace Reclaim.Application.Commands.User;
 
@@ -12,12 +12,12 @@ public class UserCommandHandler(IDomainEventBus eventBus) : ICommandHandler<Crea
         throw new NotImplementedException();
     }
 
-    public Task<UserWriteEntity> HandleAsync(UpdateUserCommand command)
+    public Task<UserWriteEntity> HandleAsync(DeleteUserCommand command)
     {
         throw new NotImplementedException();
     }
 
-    public Task<UserWriteEntity> HandleAsync(DeleteUserCommand command)
+    public Task<UserWriteEntity> HandleAsync(UpdateUserCommand command)
     {
         throw new NotImplementedException();
     }

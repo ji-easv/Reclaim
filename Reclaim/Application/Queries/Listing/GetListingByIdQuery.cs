@@ -4,5 +4,4 @@ namespace Reclaim.Application.Queries.Listing;
 
 public class GetListingByIdQuery : IQuery<ListingGetDto>
 {
-    
 }

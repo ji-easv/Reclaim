@@ -1,5 +1,5 @@
 ﻿using Reclaim.Domain.Entities.Write;
-using Reclaim.Infrastructure.EventBus;
+using Reclaim.Infrastructure.EventBus.EventBus;
 
 namespace Reclaim.Application.Commands.Order;
 
@@ -13,12 +13,12 @@ public class OrderCommandHandler(IDomainEventBus domainEventBus)
         throw new NotImplementedException();
     }
 
-    public Task<OrderWriteEntity> HandleAsync(UpdateOrderCommand command)
+    public Task<OrderWriteEntity> HandleAsync(DeleteOrderCommand command)
     {
         throw new NotImplementedException();
     }
 
-    public Task<OrderWriteEntity> HandleAsync(DeleteOrderCommand command)
+    public Task<OrderWriteEntity> HandleAsync(UpdateOrderCommand command)
     {
         throw new NotImplementedException();
     }

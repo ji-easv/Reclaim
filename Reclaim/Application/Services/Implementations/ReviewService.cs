@@ -4,5 +4,4 @@ namespace Reclaim.Application.Services.Implementations;
 
 public class ReviewService : IReviewService
 {
-    
 }

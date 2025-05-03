@@ -6,7 +6,6 @@ namespace Reclaim.Infrastructure.Repositories.S3;
 
 public class MinIoObjectStorageRepository(MinIoContext context) : IObjectStorageRepository
 {
-    
     public async Task<FileUploadResponse> UploadFileAsync(string fileName, Stream fileStream, string contentType)
     {
         var objectKey = Guid.NewGuid();
@@ -18,7 +17,7 @@ public class MinIoObjectStorageRepository(MinIoContext context) : IObjectStorage
             .WithContentType(contentType);
 
         var response = await context.MinioClient.PutObjectAsync(putObjectArgs);
-        
+
         return new FileUploadResponse
         {
             FileName = fileName,
@@ -42,7 +41,7 @@ public class MinIoObjectStorageRepository(MinIoContext context) : IObjectStorage
             .WithBucket(MinIoContext.ListingBucketName)
             .WithObject(objectKey.ToString())
             .WithExpiry(3600); // URL valid for 1 hour
-        
+
         return await context.MinioClient.PresignedGetObjectAsync(presignedGetObjectArgs);
     }
 

@@ -4,5 +4,4 @@ namespace Reclaim.Infrastructure.Repositories.Write.Interfaces;
 
 public interface IUserWriteRepository : IWriteCrudRepository<UserWriteEntity>
 {
-    
 }

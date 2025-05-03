@@ -4,5 +4,4 @@ namespace Reclaim.Application.Commands.Review;
 
 public class DeleteReviewCommand : ICommand<ReviewWriteEntity>
 {
-    
 }

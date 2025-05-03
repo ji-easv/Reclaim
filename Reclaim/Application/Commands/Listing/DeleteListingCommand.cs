@@ -4,5 +4,4 @@ namespace Reclaim.Application.Commands.Listing;
 
 public class DeleteListingCommand : ICommand<ListingWriteEntity>
 {
-    
 }

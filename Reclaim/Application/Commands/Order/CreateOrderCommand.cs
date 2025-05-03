@@ -4,5 +4,4 @@ namespace Reclaim.Application.Commands.Order;
 
 public class CreateOrderCommand : ICommand<OrderWriteEntity>
 {
-    
 }

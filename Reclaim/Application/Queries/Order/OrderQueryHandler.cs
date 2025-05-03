@@ -5,12 +5,12 @@ namespace Reclaim.Application.Queries.Order;
 public class OrderQueryHandler : IQueryHandler<GetOrdersByUserIdQuery, IEnumerable<OrderGetDto>>,
     IQueryHandler<GetOrderByIdQuery, OrderGetDto>
 {
-    public Task<IEnumerable<OrderGetDto>> HandleAsync(GetOrdersByUserIdQuery query)
+    public Task<OrderGetDto> HandleAsync(GetOrderByIdQuery query)
     {
         throw new NotImplementedException();
     }
 
-    public Task<OrderGetDto> HandleAsync(GetOrderByIdQuery query)
+    public Task<IEnumerable<OrderGetDto>> HandleAsync(GetOrdersByUserIdQuery query)
     {
         throw new NotImplementedException();
     }

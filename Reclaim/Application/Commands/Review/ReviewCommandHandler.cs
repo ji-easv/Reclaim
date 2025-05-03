@@ -1,5 +1,5 @@
 ﻿using Reclaim.Domain.Entities.Write;
-using Reclaim.Infrastructure.EventBus;
+using Reclaim.Infrastructure.EventBus.EventBus;
 
 namespace Reclaim.Application.Commands.Review;
 
@@ -12,12 +12,12 @@ public class ReviewCommandHandler(IDomainEventBus eventBus) : ICommandHandler<Cr
         throw new NotImplementedException();
     }
 
-    public Task<ReviewWriteEntity> HandleAsync(UpdateReviewCommand command)
+    public Task<ReviewWriteEntity> HandleAsync(DeleteReviewCommand command)
     {
         throw new NotImplementedException();
     }
 
-    public Task<ReviewWriteEntity> HandleAsync(DeleteReviewCommand command)
+    public Task<ReviewWriteEntity> HandleAsync(UpdateReviewCommand command)
     {
         throw new NotImplementedException();
     }

@@ -1,6 +1,5 @@
-﻿namespace Reclaim.Infrastructure.EventBus.Events.Listing;
+﻿namespace Reclaim.Infrastructure.EventBus.Listing;
 
 public class ListingDeletedEvent : IDomainEvent
 {
-    
 }
