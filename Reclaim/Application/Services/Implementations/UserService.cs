@@ -26,16 +26,28 @@ public class UserService(
 
     public async Task<UserGetDto> UpdateUserAsync(UpdateUserCommand command)
     {
-        throw new NotImplementedException();
+        var user = await commandHandler.HandleAsync(command);
+        await domainEventBus.Publish(new UserUpdatedEvent
+        {
+            UserWriteEntity = user
+        });
+        return user.ToGetDto();
     }
 
     public async Task<UserGetDto> DeleteUserAsync(DeleteUserCommand command)
     {
-        throw new NotImplementedException();
+        var user = await commandHandler.HandleAsync(command);
+         await domainEventBus.Publish(new UserDeletedEvent
+        {
+            UserId = command.UserId,
+            DeletedAt = user.UpdatedAt!.Value
+        });
+        return user.ToGetDto();
     }
 
     public async Task<UserGetDto> GetUserByIdAsync(GetUserByIdQuery query)
     {
-        throw new NotImplementedException();
+        var user = await queryHandler.HandleAsync(query);
+        return user.ToGetDto();
     }
 }

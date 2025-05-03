@@ -6,5 +6,5 @@ public interface IWriteCrudRepository<TEntity> where TEntity : class
     Task<IEnumerable<TEntity>> GetAllAsync();
     Task<TEntity> AddAsync(TEntity entity);
     Task<TEntity> UpdateAsync(TEntity entity);
-    Task<bool> DeleteAsync(TEntity entity);
+    Task<DateTimeOffset> DeleteAsync(TEntity entity);
 }

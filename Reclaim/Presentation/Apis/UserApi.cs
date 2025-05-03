@@ -37,7 +37,7 @@ public static class UserApi
     {
         var result = await userService.GetUserByIdAsync(new GetUserByIdQuery
         {
-            
+            UserId = userId
         });
         return TypedResults.Ok(result);
     }

@@ -9,12 +9,15 @@ public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepo
 {
     public async Task<UserWriteEntity?> GetByIdAsync(string id)
     {
-        throw new NotImplementedException();
+        return await dbContext.Users
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<IEnumerable<UserWriteEntity>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await dbContext.Users
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<UserWriteEntity> AddAsync(UserWriteEntity entity)
@@ -31,17 +34,17 @@ public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepo
         return result.Entity;
     }
 
-    public async Task<bool> DeleteAsync(string id)
+    public async Task<DateTimeOffset> DeleteAsync(UserWriteEntity entity)
     {
-        var user = await dbContext.Users.FindAsync(id);
-        if (user == null)
-        {
-            return false;
-        }
-
-        dbContext.Users.Remove(user);
+        // Soft delete (erase personal data)
+        entity.IsDeleted = true;
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+        entity.Email = string.Empty;
+        entity.Name = string.Empty;
+        
+        dbContext.Users.Update(entity);
         await dbContext.SaveChangesAsync();
-        return true;
+        return entity.UpdatedAt.Value;
     }
 
     public async Task<UserWriteEntity?> GetByEmailAsync(string email)

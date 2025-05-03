@@ -8,26 +8,36 @@ namespace Reclaim.Domain.Mappers;
 
 public static class UserMapper
 {
-    public static UserGetDto ToGetDto(this UserWriteEntity user)
+    public static UserGetDto ToGetDto(this UserWriteEntity userWriteEntity)
     {
         return new UserGetDto
         {
-            Id = user.Id,
-            Name = user.Name,
-            CreatedAt = user.CreatedAt
+            Id = userWriteEntity.Id,
+            Name = userWriteEntity.Name,
+            CreatedAt = userWriteEntity.CreatedAt
+        };
+    }
+
+    public static UserGetDto ToGetDto(this UserReadEntity userReadEntity)
+    {
+        return new UserGetDto
+        {
+            Id = userReadEntity.Id.ToString(),
+            Name = userReadEntity.Name,
+            CreatedAt = userReadEntity.CreatedAt
         };
     }
     
-    public static UserReadEntity ToReadEntity(this UserWriteEntity user)
+    public static UserReadEntity ToReadEntity(this UserWriteEntity userWriteEntity)
     {
         return new UserReadEntity
         {
-            Id = ObjectId.Parse(user.Id),
-            Name = user.Name,
-            CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt,
-            Email = user.Email,
-            IsDeleted = user.IsDeleted
+            Id = ObjectId.Parse(userWriteEntity.Id),
+            Name = userWriteEntity.Name,
+            CreatedAt = userWriteEntity.CreatedAt,
+            UpdatedAt = userWriteEntity.UpdatedAt,
+            Email = userWriteEntity.Email,
+            IsDeleted = userWriteEntity.IsDeleted
         };
     }
 }

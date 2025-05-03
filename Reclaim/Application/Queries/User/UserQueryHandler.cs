@@ -1,10 +1,10 @@
-﻿using Reclaim.Domain.DTOs;
+﻿using Reclaim.Domain.Entities.Read;
 
 namespace Reclaim.Application.Queries.User;
 
-public class UserQueryHandler : IQueryHandler<GetUserByIdQuery, UserGetDto>
+public class UserQueryHandler : IQueryHandler<GetUserByIdQuery, UserReadEntity>
 {
-    public Task<UserGetDto> HandleAsync(GetUserByIdQuery query)
+    public async Task<UserReadEntity> HandleAsync(GetUserByIdQuery query)
     {
         throw new NotImplementedException();
     }

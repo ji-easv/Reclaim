@@ -26,7 +26,7 @@ public class ListingWriteEfRepository(PostgresDbContext dbContext) : IListingWri
         throw new NotImplementedException();
     }
 
-    public Task<bool> DeleteAsync(string id)
+    public Task<DateTimeOffset> DeleteAsync(ListingWriteEntity entity)
     {
         throw new NotImplementedException();
     }

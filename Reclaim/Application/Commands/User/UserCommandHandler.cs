@@ -43,8 +43,9 @@ public class UserCommandHandler(
             throw new NotFoundException($"User with ID {command.UserId} not found.");
         }
 
-        user.IsDeleted = true;
-        return await userWriteRepository.UpdateAsync(user);
+        var deletedAt = await userWriteRepository.DeleteAsync(user);
+        user.UpdatedAt = deletedAt;
+        return user;
     }
 
     public async Task<UserWriteEntity> HandleAsync(UpdateUserCommand command)
