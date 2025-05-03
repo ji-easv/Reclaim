@@ -16,20 +16,20 @@ public static class UserApi
             .WithTags("User")
             .WithName("UserApi");
         
-        api.MapPost("/create", CreateUserAsync);
+        api.MapPost("/", CreateUserAsync);
         
-        api.MapPut("/update", UpdateUserAsync);
+        api.MapPut("/", UpdateUserAsync);
         
-        api.MapDelete("/delete/{userId}", DeleteUserAsync);
+        api.MapDelete("/{userId:length(24)}", DeleteUserAsync);
         
-        api.MapGet("/{userId}", GetUserByIdAsync);
+        api.MapGet("/{userId:length(24)}", GetUserByIdAsync);
         
         return api;
     }
     
     private static async Task<Results<Ok<UserGetDto>, ProblemHttpResult>> GetUserByIdAsync(
         [FromServices] IUserService userService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var result = await userService.GetUserByIdAsync(new GetUserByIdQuery
@@ -59,7 +59,7 @@ public static class UserApi
     
     private static async Task<Results<Ok<UserGetDto>, ProblemHttpResult>> DeleteUserAsync(
         [FromServices] IUserService userService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var result = await userService.DeleteUserAsync(new DeleteUserCommand

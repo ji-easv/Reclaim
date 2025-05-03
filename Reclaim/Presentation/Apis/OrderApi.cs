@@ -16,15 +16,15 @@ public static class OrderApi
             .WithTags("Order")
             .WithName("OrderApi");
         
-        api.MapPost("/create", CreateOrderAsync);
+        api.MapPost("/", CreateOrderAsync);
         
-        api.MapPut("/update", UpdateOrderAsync);
+        api.MapPut("/", UpdateOrderAsync);
         
-        api.MapDelete("/delete/{orderId}", DeleteOrderAsync);
+        api.MapDelete("/{orderId:length(24)}", DeleteOrderAsync);
         
-        api.MapGet("/{orderId}", GetOrderByIdAsync);
+        api.MapGet("/{orderId:length(24)}", GetOrderByIdAsync);
         
-        api.MapGet("/user/{userId}", GetOrdersByUserIdAsync);
+        api.MapGet("/user/{userId:length(24)}", GetOrdersByUserIdAsync);
 
         return api;
     }
@@ -49,7 +49,7 @@ public static class OrderApi
     
     private static async Task<Results<Ok<OrderGetDto>, ProblemHttpResult>> DeleteOrderAsync(
         [FromServices] IOrderService orderService,
-        [FromRoute] string orderId // TODO: Replace with actual type
+        [FromRoute] string orderId
     )
     {
         var result = await orderService.DeleteOrderAsync(new DeleteOrderCommand
@@ -61,7 +61,7 @@ public static class OrderApi
     
     private static async Task<Results<Ok<OrderGetDto>, ProblemHttpResult>> GetOrderByIdAsync(
         [FromServices] IOrderService orderService,
-        [FromRoute] string orderId // TODO: Replace with actual type
+        [FromRoute] string orderId
     )
     {
         var result = await orderService.GetOrderByIdAsync(new GetOrderByIdQuery
@@ -73,7 +73,7 @@ public static class OrderApi
     
     private static async Task<Results<Ok<List<OrderGetDto>>, ProblemHttpResult>> GetOrdersByUserIdAsync(
         [FromServices] IOrderService orderService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var result = await orderService.GetOrdersForUserAsync(new GetOrdersByUserIdQuery

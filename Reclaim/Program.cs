@@ -1,4 +1,5 @@
 using Reclaim.Application.Extensions;
+using Reclaim.Infrastructure.UnitOfWork;
 using Reclaim.Presentation.Apis;
 using Reclaim.Presentation.Middleware;
 
@@ -15,6 +16,7 @@ builder.Services.AddDbContexts(builder.Configuration);
 builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddCommandAndQueryHandlers();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();
 

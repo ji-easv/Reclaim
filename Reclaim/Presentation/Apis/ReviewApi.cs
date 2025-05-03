@@ -16,15 +16,15 @@ public static class ReviewApi
             .WithTags("Review")
             .WithName("ReviewApi");
         
-        api.MapPost("/create", CreateReviewAsync);
+        api.MapPost("/", CreateReviewAsync);
         
-        api.MapPut("/update", UpdateReviewAsync);
+        api.MapPut("/", UpdateReviewAsync);
         
-        api.MapDelete("/delete/{reviewId}", DeleteReviewAsync);
+        api.MapDelete("/{reviewId:length(24)}", DeleteReviewAsync);
         
-        api.MapGet("/user/{userId}", GetReviewsWrittenByUserAsync);
+        api.MapGet("/user/{userId:length(24)}", GetReviewsWrittenByUserAsync);
         
-        api.MapGet("/seller/{userId}", GetReviewsForSellerAsync);
+        api.MapGet("/seller/{userId:length(24)}", GetReviewsForSellerAsync);
         
         return api;
     }
@@ -49,7 +49,7 @@ public static class ReviewApi
     
     private static async Task<Results<Ok<ReviewGetDto>, ProblemHttpResult>> DeleteReviewAsync(
         [FromServices] IReviewService reviewService,
-        [FromRoute] string reviewId // TODO: Replace with actual type
+        [FromRoute] string reviewId
     )
     {
         var result = await reviewService.DeleteReviewAsync(new DeleteReviewCommand
@@ -61,7 +61,7 @@ public static class ReviewApi
     
     private static async Task<Results<Ok<List<ReviewGetDto>>, ProblemHttpResult>> GetReviewsWrittenByUserAsync(
         [FromServices] IReviewService reviewService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var result = await reviewService.GetReviewsWrittenByUserAsync(new GetReviewsWrittenByUserId
@@ -73,7 +73,7 @@ public static class ReviewApi
     
     private static async Task<Results<Ok<List<ReviewGetDto>>, ProblemHttpResult>> GetReviewsForSellerAsync(
         [FromServices] IReviewService reviewService,
-        [FromRoute] string userId // TODO: Replace with actual type
+        [FromRoute] string userId
     )
     {
         var result = await reviewService.GetReviewsForSellerAsync(new GetReviewsForSellerQuery
