@@ -9,7 +9,7 @@ assignees: ''
 
 ## Checklist
 
-This involves implementing functionality in:
+This may involve implementing functionality in:
 - [ ] Controller
 - [ ] Command Handler
 - [ ] Service
