@@ -17,7 +17,7 @@ public class ListingWriteEntity
     public required decimal Price { get; set; }
     public required bool IsDeleted { get; set; }
     
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
     
     // Navigation properties
