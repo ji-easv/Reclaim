@@ -1,12 +1,97 @@
-﻿namespace Reclaim.Presentation.Apis;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Reclaim.Application.Commands.Listing;
+using Reclaim.Application.Queries.Listing;
+using Reclaim.Application.Services.Interfaces;
+using Reclaim.Domain.DTOs;
+
+namespace Reclaim.Presentation.Apis;
 
 public static class ListingApi
 {
     public static RouteGroupBuilder AddListingApi(this IEndpointRouteBuilder app)
     {
         var api = app
-            .MapGroup("/api/v1/listing");
+            .MapGroup("/api/v1/listing")
+            .WithTags("Listing")
+            .WithName("ListingApi");
+        
+        api.MapPost("/create", CreateListingAsync);
 
+        api.MapPut("/update", UpdateListingAsync);
+
+        api.MapDelete("/delete/{listingId}", DeleteListingAsync);
+
+        api.MapGet("/{listingId}", GetListingByIdAsync);
+        
+        api.MapGet("/user/{userId}", GetListingsByUserIdAsync);
+        
+        api.MapGet("/latest", GetLatestListingsAsync);
+        
         return api;
+    }
+
+    private static async Task<Results<Ok<ListingGetDto>, ProblemHttpResult>> CreateListingAsync(
+        [FromServices] IListingService listingService,
+        [FromBody] CreateListingCommand createListingCommand
+    )
+    {
+        var result = await listingService.CreateListingAsync(createListingCommand);
+        return TypedResults.Ok(result);
+    }
+    
+    private static async Task<Results<Ok<ListingGetDto>, ProblemHttpResult>> UpdateListingAsync(
+        [FromServices] IListingService listingService,
+        [FromBody] UpdateListingCommand updateListingCommand
+    )
+    {
+        var result = await listingService.UpdateListingAsync(updateListingCommand);
+        return TypedResults.Ok(result);
+    }
+    
+    private static async Task<Results<Ok<ListingGetDto>, ProblemHttpResult>> DeleteListingAsync(
+        [FromServices] IListingService listingService,
+        [FromRoute] string listingId // TODO: Replace with actual type
+    )
+    {
+        var result = await listingService.DeleteListingAsync(new DeleteListingCommand
+        {
+           
+        });
+        return TypedResults.Ok(result);
+    }
+    
+    private static async Task<Results<Ok<ListingGetDto>, ProblemHttpResult>> GetListingByIdAsync(
+        [FromServices] IListingService listingService,
+        [FromRoute] string listingId // TODO: Replace with actual type
+    )
+    {
+        var query = new GetListingByIdQuery
+        {
+            
+        };
+        var result = await listingService.GetListingByIdAsync(query);
+        return TypedResults.Ok(result);
+    }
+    
+    private static async Task<Results<Ok<List<ListingGetDto>>, ProblemHttpResult>> GetListingsByUserIdAsync(
+        [FromServices] IListingService listingService,
+        [FromRoute] string userId // TODO: Replace with actual type
+    )
+    {
+        var query = new GetListingsByUserIdQuery
+        {
+            
+        };
+        var result = await listingService.GetListingsForUserAsync(query);
+        return TypedResults.Ok(result);
+    }
+    
+    private static async Task<Results<Ok<List<ListingGetDto>>, ProblemHttpResult>> GetLatestListingsAsync(
+        [FromServices] IListingService listingService
+    )
+    {
+        var result = await listingService.GetLatestListingsAsync(new GetLatestListingsQuery());
+        return TypedResults.Ok(result);
     }
 }

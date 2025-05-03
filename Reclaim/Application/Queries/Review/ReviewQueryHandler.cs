@@ -3,9 +3,9 @@
 namespace Reclaim.Application.Queries.Review;
 
 public class ReviewQueryHandler : IQueryHandler<GetReviewsForSellerQuery, IEnumerable<ReviewGetDto>>,
-    IQueryHandler<GetReviewsByUserId, IEnumerable<ReviewGetDto>>
+    IQueryHandler<GetReviewsWrittenByUserId, IEnumerable<ReviewGetDto>>
 {
-    public Task<IEnumerable<ReviewGetDto>> HandleAsync(GetReviewsByUserId query)
+    public Task<IEnumerable<ReviewGetDto>> HandleAsync(GetReviewsWrittenByUserId query)
     {
         throw new NotImplementedException();
     }
