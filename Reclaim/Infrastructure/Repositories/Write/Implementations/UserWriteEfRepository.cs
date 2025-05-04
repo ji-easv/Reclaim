@@ -26,7 +26,7 @@ public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepo
         throw new NotImplementedException();
     }
 
-    public Task<bool> DeleteAsync(string id)
+    public Task<bool> DeleteAsync(UserWriteEntity entity)
     {
         throw new NotImplementedException();
     }
