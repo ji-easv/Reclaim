@@ -37,6 +37,7 @@ public class UserCommandHandler(
 
     public async Task<UserWriteEntity> HandleAsync(DeleteUserCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         var user = await userWriteRepository.GetByIdAsync(command.UserId);
         if (user is null)
         {
@@ -45,11 +46,13 @@ public class UserCommandHandler(
 
         var deletedAt = await userWriteRepository.DeleteAsync(user);
         user.UpdatedAt = deletedAt;
+        await unitOfWork.CommitAsync();
         return user;
     }
 
     public async Task<UserWriteEntity> HandleAsync(UpdateUserCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         var user = await userWriteRepository.GetByIdAsync(command.UserId);
         if (user is null)
         {
@@ -58,6 +61,7 @@ public class UserCommandHandler(
 
         user.Name = command.Name;
         user.UpdatedAt = DateTimeOffset.UtcNow;
+        await unitOfWork.CommitAsync();
 
         return await userWriteRepository.UpdateAsync(user);
     }
