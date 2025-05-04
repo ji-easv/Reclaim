@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Reclaim.Domain.Exceptions;
 
 namespace Reclaim.Presentation.Middleware;
 
@@ -13,7 +14,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         var detail = exception.Message;
         var additionalData = new Dictionary<string, object>();
 
-        if (exception is ApplicationException customException)
+        if (exception is AppException customException)
         {
             logger.LogError(exception, "Custom exception occurred: {Message}", exception.Message);
 
