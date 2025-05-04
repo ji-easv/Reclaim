@@ -61,8 +61,9 @@ public class UserCommandHandler(
 
         user.Name = command.Name;
         user.UpdatedAt = DateTimeOffset.UtcNow;
-        await unitOfWork.CommitAsync();
 
-        return await userWriteRepository.UpdateAsync(user);
+        var result = await userWriteRepository.UpdateAsync(user);
+        await unitOfWork.CommitAsync();
+        return result;
     }
 }
