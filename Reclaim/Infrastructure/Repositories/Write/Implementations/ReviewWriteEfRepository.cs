@@ -26,7 +26,7 @@ public class ReviewWriteEfRepository(PostgresDbContext dbContext) : IReviewWrite
         throw new NotImplementedException();
     }
 
-    public Task<DateTimeOffset> DeleteAsync(ReviewWriteEntity entity)
+    public Task<ReviewWriteEntity> DeleteAsync(ReviewWriteEntity entity)
     {
         throw new NotImplementedException();
     }

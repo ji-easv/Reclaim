@@ -38,9 +38,8 @@ public class ListingCommandHandler(
         {
             throw new NotFoundException($"Listing with ID {command.Id} not found.");
         }
-
-        listing.IsDeleted = true;
-        var deletedListing = await listingWriteRepository.UpdateAsync(listing);
+        
+        var deletedListing = await listingWriteRepository.DeleteAsync(listing);
         await unitOfWork.CommitAsync();
         return deletedListing;
     }

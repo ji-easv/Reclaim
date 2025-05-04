@@ -34,17 +34,17 @@ public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepo
         return result.Entity;
     }
 
-    public async Task<DateTimeOffset> DeleteAsync(UserWriteEntity entity)
+    public async Task<UserWriteEntity> DeleteAsync(UserWriteEntity entity)
     {
         // Soft delete (erase personal data)
         entity.IsDeleted = true;
         entity.UpdatedAt = DateTimeOffset.UtcNow;
-        entity.Email = string.Empty;
-        entity.Name = string.Empty;
+        entity.Email = "DELETED";
+        entity.Name = "DELETED";
         
         dbContext.Users.Update(entity);
         await dbContext.SaveChangesAsync();
-        return entity.UpdatedAt.Value;
+        return entity;
     }
 
     public async Task<UserWriteEntity?> GetByEmailAsync(string email)

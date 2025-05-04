@@ -46,12 +46,12 @@ public class ListingWriteEfRepository(PostgresDbContext dbContext) : IListingWri
         return listingWithUser;
     }
 
-    public async Task<DateTimeOffset> DeleteAsync(ListingWriteEntity entity)
+    public async Task<ListingWriteEntity> DeleteAsync(ListingWriteEntity entity)
     {
         entity.IsDeleted = true;
         entity.UpdatedAt = DateTimeOffset.UtcNow;
         dbContext.Listings.Update(entity);
         await dbContext.SaveChangesAsync();
-        return entity.UpdatedAt.Value;
+        return entity;
     }
 }

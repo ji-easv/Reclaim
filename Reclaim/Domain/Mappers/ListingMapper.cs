@@ -8,20 +8,6 @@ namespace Reclaim.Domain.Mappers;
 
 public static class ListingMapper
 {
-    public static ListingGetDto ToDto(this ListingWriteEntity entity, UserWriteEntity user)
-    {
-        return new ListingGetDto
-        {
-            Id = entity.Id,
-            Title = entity.Title,
-            Content = entity.Content,
-            Price = entity.Price,
-            CreatedAt = entity.CreatedAt,
-            UpdatedAt = entity.UpdatedAt,
-            User = user.ToGetDto()
-        };
-    }
-    
     public static ListingGetDto ToDto(this ListingWriteEntity entity)
     {
         return new ListingGetDto
@@ -47,36 +33,7 @@ public static class ListingMapper
             IsDeleted = false
         };
     }
-    
-    public static ListingWriteEntity ToEntity(this UpdateListingCommand command, string userId)
-    {
-        return new ListingWriteEntity
-        {
-            Id = command.Id,
-            Title = command.Title,
-            Content = command.Content,
-            Price = command.Price,
-            IsDeleted = false,
-            UserId = userId
-        };
-    }
-    
-    public static ListingReadEntity ToReadEntity(this ListingWriteEntity writeEntity, UserWriteEntity user, List<MediaWriteEntity> media)
-    {
-        return new ListingReadEntity
-        {
-            Id = ObjectId.Parse(writeEntity.Id),
-            Title = writeEntity.Title,
-            Content = writeEntity.Content,
-            Price = writeEntity.Price,
-            CreatedAt = writeEntity.CreatedAt,
-            UpdatedAt = writeEntity.UpdatedAt,
-            IsDeleted = writeEntity.IsDeleted,
-            User = user.ToReadEntity(),
-            Media = media.Select(m => m.ToReadEntity()).ToList()
-        };
-    }
-    
+
     public static ListingReadEntity ToReadEntity(this ListingWriteEntity writeEntity, List<MediaWriteEntity> media)
     {
         return new ListingReadEntity
