@@ -11,7 +11,7 @@ public class OrderWriteEfRepository(PostgresDbContext dbContext) : IOrderWriteRe
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<OrderWriteEntity>> GetAllAsync()
+    public Task<IEnumerable<OrderWriteEntity>> GetAllAsync(bool includeDeleted = false)
     {
         throw new NotImplementedException();
     }

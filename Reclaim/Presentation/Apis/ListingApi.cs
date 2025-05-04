@@ -61,7 +61,7 @@ public static class ListingApi
     {
         var result = await listingService.DeleteListingAsync(new DeleteListingCommand
         {
-           
+            Id = listingId
         });
         return TypedResults.Ok(result);
     }
@@ -73,7 +73,7 @@ public static class ListingApi
     {
         var query = new GetListingByIdQuery
         {
-            
+            Id = listingId
         };
         var result = await listingService.GetListingByIdAsync(query);
         return TypedResults.Ok(result);
@@ -86,7 +86,7 @@ public static class ListingApi
     {
         var query = new GetListingsByUserIdQuery
         {
-            
+            UserId = userId
         };
         var result = await listingService.GetListingsForUserAsync(query);
         return TypedResults.Ok(result);

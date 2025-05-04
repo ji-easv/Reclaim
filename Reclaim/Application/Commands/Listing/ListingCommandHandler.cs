@@ -1,25 +1,58 @@
-﻿using Reclaim.Domain.Entities.Write;
-using Reclaim.Infrastructure.EventBus.EventBus;
+﻿using System.Data;
+using Reclaim.Domain.Entities.Write;
+using Reclaim.Domain.Exceptions;
+using Reclaim.Domain.Mappers;
+using Reclaim.Infrastructure.Repositories.Write.Interfaces;
+using Reclaim.Infrastructure.UnitOfWork;
 
 namespace Reclaim.Application.Commands.Listing;
 
-public class ListingCommandHandler(IDomainEventBus domainEventBus)
+public class ListingCommandHandler(
+    IListingWriteRepository listingWriteRepository,
+    IUnitOfWork unitOfWork
+    )
     : ICommandHandler<CreateListingCommand, ListingWriteEntity>,
         ICommandHandler<UpdateListingCommand, ListingWriteEntity>,
         ICommandHandler<DeleteListingCommand, ListingWriteEntity>
 {
-    public Task<ListingWriteEntity> HandleAsync(CreateListingCommand command)
+    public async Task<ListingWriteEntity> HandleAsync(CreateListingCommand command)
     {
-        throw new NotImplementedException();
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        var createdListing = await listingWriteRepository.AddAsync(command.ToEntity());
+        await unitOfWork.CommitAsync();
+        return createdListing;
     }
 
-    public Task<ListingWriteEntity> HandleAsync(DeleteListingCommand command)
+    public async Task<ListingWriteEntity> HandleAsync(DeleteListingCommand command)
     {
-        throw new NotImplementedException();
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        var listing = await listingWriteRepository.GetByIdAsync(command.Id);
+        if (listing == null)
+        {
+            throw new NotFoundException($"Listing with ID {command.Id} not found.");
+        }
+
+        listing.IsDeleted = true;
+        var deletedListing = await listingWriteRepository.UpdateAsync(listing);
+        await unitOfWork.CommitAsync();
+        return deletedListing;
     }
 
-    public Task<ListingWriteEntity> HandleAsync(UpdateListingCommand command)
+    public async Task<ListingWriteEntity> HandleAsync(UpdateListingCommand command)
     {
-        throw new NotImplementedException();
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        var listing = await listingWriteRepository.GetByIdAsync(command.Id);
+        if (listing == null)
+        {
+            throw new NotFoundException($"Listing with ID {command.Id} not found.");
+        }
+
+        listing.Title = command.Title;
+        listing.Content = command.Content;
+        listing.Price = command.Price;
+
+        var updatedListing = await listingWriteRepository.UpdateAsync(listing);
+        await unitOfWork.CommitAsync();
+        return updatedListing;
     }
 }

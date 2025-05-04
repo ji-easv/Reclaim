@@ -13,7 +13,7 @@ public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepo
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<IEnumerable<UserWriteEntity>> GetAllAsync()
+    public async Task<IEnumerable<UserWriteEntity>> GetAllAsync(bool includeDeleted = false)
     {
         return await dbContext.Users
             .AsNoTracking()

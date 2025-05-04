@@ -39,8 +39,7 @@ public class PostgresDbContext(DbContextOptions<PostgresDbContext> options) : Db
 
             entity.HasMany(o => o.Listings)
                 .WithOne()
-                .HasForeignKey(e => e.Id)
-                .OnDelete(DeleteBehavior.SetNull);
+                .HasForeignKey(e => e.OrderId);
         });
 
         modelBuilder.Entity<ReviewWriteEntity>(entity =>
