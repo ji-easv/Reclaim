@@ -92,4 +92,18 @@ public static class ListingMapper
             Media = media.Select(m => m.ToReadEntity()).ToList()
         };
     }
+
+    public static ListingGetDto ToDto(this ListingReadEntity entity)
+    {
+        return new ListingGetDto
+        {
+            Id = entity.Id.ToString(),
+            Title = entity.Title,
+            Content = entity.Content,
+            Price = entity.Price,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
+            User = entity.User.ToGetDto()
+        };
+    }
 }

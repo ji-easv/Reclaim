@@ -68,12 +68,14 @@ public static class ListingApi
     
     private static async Task<Results<Ok<ListingGetDto>, ProblemHttpResult>> GetListingByIdAsync(
         [FromServices] IListingService listingService,
-        [FromRoute] string listingId
+        [FromRoute] string listingId,
+        [FromQuery] bool includeDeleted = false
     )
     {
         var query = new GetListingByIdQuery
         {
-            Id = listingId
+            Id = listingId,
+            IncludeDeleted = includeDeleted
         };
         var result = await listingService.GetListingByIdAsync(query);
         return TypedResults.Ok(result);
@@ -81,12 +83,14 @@ public static class ListingApi
     
     private static async Task<Results<Ok<List<ListingGetDto>>, ProblemHttpResult>> GetListingsByUserIdAsync(
         [FromServices] IListingService listingService,
-        [FromRoute] string userId
+        [FromRoute] string userId,
+        [FromQuery] bool includeDeleted = false
     )
     {
         var query = new GetListingsByUserIdQuery
         {
-            UserId = userId
+            UserId = userId,
+            IncludeDeleted = includeDeleted
         };
         var result = await listingService.GetListingsForUserAsync(query);
         return TypedResults.Ok(result);

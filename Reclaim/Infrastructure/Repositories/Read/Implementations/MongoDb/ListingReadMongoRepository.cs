@@ -38,9 +38,14 @@ public class ListingReadMongoRepository(MongoDbContext dbContext) : IListingRead
         return arg.UpdatedAt ?? DateTimeOffset.UtcNow;
     }
 
-    public async Task<ListingReadEntity?> GetByIdAsync(string id)
+    public async Task<ListingReadEntity?> GetByIdAsync(string id, bool includeDeleted = false)
     {
         var filter = Builders<ListingReadEntity>.Filter.Eq(e => e.Id, ObjectId.Parse(id));
+        if (!includeDeleted)
+        {
+            filter &= Builders<ListingReadEntity>.Filter.Eq(e => e.IsDeleted, false);
+        }
+
         return await dbContext.Listings.Find(filter).FirstOrDefaultAsync();
     }
 
@@ -54,9 +59,13 @@ public class ListingReadMongoRepository(MongoDbContext dbContext) : IListingRead
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<ListingReadEntity>> GetByUserIdAsync(string userId)
+    public async Task<IEnumerable<ListingReadEntity>> GetByUserIdAsync(string userId, bool includeDeleted = false)
     {
         var filter = Builders<ListingReadEntity>.Filter.Eq(e => e.User.Id, ObjectId.Parse(userId));
+        if (!includeDeleted)
+        {
+            filter &= Builders<ListingReadEntity>.Filter.Eq(e => e.IsDeleted, false);
+        }
         return await dbContext.Listings.Find(filter)
             .SortByDescending(e => e.CreatedAt)
             .ToListAsync();

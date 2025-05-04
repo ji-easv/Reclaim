@@ -6,7 +6,7 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class OrderWriteEfRepository(PostgresDbContext dbContext) : IOrderWriteRepository
 {
-    public Task<OrderWriteEntity?> GetByIdAsync(string id)
+    public Task<OrderWriteEntity?> GetByIdAsync(string id, bool includeDeleted = false)
     {
         throw new NotImplementedException();
     }

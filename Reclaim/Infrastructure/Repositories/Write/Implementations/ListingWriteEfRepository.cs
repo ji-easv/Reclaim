@@ -7,11 +7,11 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class ListingWriteEfRepository(PostgresDbContext dbContext) : IListingWriteRepository
 {
-    public async Task<ListingWriteEntity?> GetByIdAsync(string id)
+    public async Task<ListingWriteEntity?> GetByIdAsync(string id, bool includeDeleted = false)
     {
         var listing = await dbContext.Listings
             .Include(l => l.User)
-            .FirstOrDefaultAsync(l => l.Id == id && !l.IsDeleted);
+            .FirstOrDefaultAsync(l => l.Id == id && (includeDeleted || !l.IsDeleted));
         return listing;
     }
 

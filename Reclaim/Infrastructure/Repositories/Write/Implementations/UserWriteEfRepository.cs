@@ -7,10 +7,10 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepository
 {
-    public async Task<UserWriteEntity?> GetByIdAsync(string id)
+    public async Task<UserWriteEntity?> GetByIdAsync(string id, bool includeDeleted = false)
     {
         return await dbContext.Users
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id && (includeDeleted || !x.IsDeleted));
     }
 
     public async Task<IEnumerable<UserWriteEntity>> GetAllAsync(bool includeDeleted = false)

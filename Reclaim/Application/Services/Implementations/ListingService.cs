@@ -52,16 +52,19 @@ public class ListingService(
 
     public async Task<ListingGetDto> GetListingByIdAsync(GetListingByIdQuery query)
     {
-        throw new NotImplementedException();
+        var listing = await queryHandler.HandleAsync(query);
+        return listing.ToDto();
     }
 
     public async Task<List<ListingGetDto>> GetListingsForUserAsync(GetListingsByUserIdQuery query)
     {
-        throw new NotImplementedException();
+        var listings = await queryHandler.HandleAsync(query);
+        return listings.Select(l => l.ToDto()).ToList();
     }
 
     public async Task<List<ListingGetDto>> GetLatestListingsAsync(GetLatestListingsQuery query)
     {
-        throw new NotImplementedException();
+        var listings = await queryHandler.HandleAsync(query);
+        return listings.Select(l => l.ToDto()).ToList();
     }
 }

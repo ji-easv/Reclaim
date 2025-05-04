@@ -9,6 +9,7 @@ namespace Reclaim.Application.Commands.Listing;
 
 public class ListingCommandHandler(
     IListingWriteRepository listingWriteRepository,
+    IUserWriteRepository userWriteRepository,
     IUnitOfWork unitOfWork
     )
     : ICommandHandler<CreateListingCommand, ListingWriteEntity>,
@@ -18,6 +19,12 @@ public class ListingCommandHandler(
     public async Task<ListingWriteEntity> HandleAsync(CreateListingCommand command)
     {
         await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        var user = await userWriteRepository.GetByIdAsync(command.UserId);
+        if (user == null)
+        {
+            throw new NotFoundException($"User with ID {command.UserId} not found.");
+        }
+        
         var createdListing = await listingWriteRepository.AddAsync(command.ToEntity());
         await unitOfWork.CommitAsync();
         return createdListing;

@@ -6,7 +6,7 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class ReviewWriteEfRepository(PostgresDbContext dbContext) : IReviewWriteRepository
 {
-    public Task<ReviewWriteEntity?> GetByIdAsync(string id)
+    public Task<ReviewWriteEntity?> GetByIdAsync(string id, bool includeDeleted = false)
     {
         throw new NotImplementedException();
     }
