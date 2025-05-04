@@ -5,13 +5,19 @@ namespace Reclaim.Domain.Entities.Read;
 
 public class UserReadEntity
 {
-    [BsonElement("_id")]
+    [BsonId]
     public required ObjectId Id { get; set; }
     
+    [BsonRequired]
     public required string Name { get; set; }
+    
+    [BsonRequired]
     public required string Email { get; set; }
+    
+    [BsonRequired]
     public required bool IsDeleted { get; set; }
 
-    public DateTimeOffset CreatedAt { get; set; }
+    [BsonRequired]
+    public required DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
 }
