@@ -1,19 +1,22 @@
-﻿using Reclaim.Domain.DTOs;
+﻿using System.Data;
 using Reclaim.Domain.Entities.Write;
 using Reclaim.Infrastructure.Repositories.S3;
 using Reclaim.Infrastructure.Repositories.Write.Interfaces;
+using Reclaim.Infrastructure.UnitOfWork;
 
 namespace Reclaim.Application.Commands.Media;
 
 public class MediaCommandHandler(
     IMediaWriteRepository mediaWriteRepository,
-    IObjectStorageRepository objectStorageRepository
+    IObjectStorageRepository objectStorageRepository,
+    IUnitOfWork unitOfWork
 )
     : ICommandHandler<CreateMediaCommand, List<MediaWriteEntity>>,
         ICommandHandler<DeleteMediaCommand, List<MediaWriteEntity>>
 {
     public async Task<List<MediaWriteEntity>> HandleAsync(CreateMediaCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         var mediaWriteEntities = new List<MediaWriteEntity>();
 
         foreach (var file in command.Files)
@@ -28,19 +31,21 @@ public class MediaCommandHandler(
                 new MediaWriteEntity
                 {
                     ListingId = command.ListingId,
-                    MimeType = command.Files.First().ContentType,
-                    SizeBytes = command.Files.Sum(f => f.Length),
+                    MimeType = file.ContentType,
+                    SizeBytes = file.Length,
                     CreatedAt = DateTimeOffset.UtcNow,
                     ObjectKey = s3Response.ObjectKey
                 });
         }
 
         await mediaWriteRepository.AddRangeAsync(mediaWriteEntities);
+        await unitOfWork.CommitAsync();
         return mediaWriteEntities;
     }
 
     public async Task<List<MediaWriteEntity>> HandleAsync(DeleteMediaCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         var mediaToDelete = new List<MediaWriteEntity>();
         foreach (var mediaId in command.MediaIds)
         {
@@ -55,7 +60,7 @@ public class MediaCommandHandler(
         }
         
         await mediaWriteRepository.DeleteRangeAsync(mediaToDelete);
-
+        await unitOfWork.CommitAsync();
         return mediaToDelete;
     }
 }
