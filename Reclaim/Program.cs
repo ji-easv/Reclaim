@@ -29,6 +29,7 @@ app.AddOrderApi();
 app.AddListingApi();
 app.AddReviewApi();
 app.AddUserApi();
+app.AddMediaApi();
 
 app.UseExceptionHandler();
 

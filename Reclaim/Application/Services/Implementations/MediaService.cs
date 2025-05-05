@@ -61,7 +61,7 @@ public class MediaService(
         return mediaGetDtoList;
     }
 
-    private async Task<string> GetSignedUrlByObjectKeyAsync(Guid objectKey)
+    public async Task<string> GetSignedUrlByObjectKeyAsync(Guid objectKey)
     {
         var getSignedUrlByObjectKeyQuery = new GetSignedUrlByObjectKeyQuery
         {

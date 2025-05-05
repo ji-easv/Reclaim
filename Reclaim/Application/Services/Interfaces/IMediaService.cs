@@ -9,4 +9,5 @@ public interface IMediaService
     Task<List<MediaGetDto>> CreateMediaAsync(CreateMediaCommand command);
     Task<List<MediaGetDto>> DeleteMediaAsync(DeleteMediaCommand command);
     Task<List<MediaGetDto>> GetMediaForListingAsync(GetMediaForListingQuery query);
+    Task<string> GetSignedUrlByObjectKeyAsync(Guid objectKey);
 }

@@ -68,7 +68,9 @@ public static class ServiceCollectionExtensions
                     minIoConfig["SecretKey"] ?? throw new ArgumentException("MinIO secret key is null"))
                 .Build();
 
-            return new MinIoContext(minIoClient);
+            var minIoContext = new MinIoContext(minIoClient);
+            minIoContext.InitializeAsync();
+            return minIoContext;
         });
     }
 

@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using Reclaim.Domain.DTOs;
 using Reclaim.Domain.Entities.Read;
 using Reclaim.Domain.Entities.Write;
 
@@ -16,6 +17,16 @@ public static class MediaMapper
             MimeType = writeEntity.MimeType,
             ObjectKey = writeEntity.ObjectKey,
             SizeBytes = writeEntity.SizeBytes
+        };
+    }
+    
+    public static MediaGetDto ToGetDto(this MediaReadEntity entity, string signedUrl)
+    {
+        return new MediaGetDto
+        {
+            Id = entity.Id.ToString(),
+            ListingId = entity.ListingId.ToString(),
+            SignedUrl = signedUrl
         };
     }
 }
