@@ -1,46 +1,70 @@
 ﻿using Reclaim.Application.Commands.Listing;
-using Reclaim.Application.Commands.Order;
 using Reclaim.Application.Queries.Listing;
-using Reclaim.Application.Queries.Order;
 using Reclaim.Application.Services.Interfaces;
 using Reclaim.Domain.DTOs;
+using Reclaim.Domain.Mappers;
 using Reclaim.Infrastructure.EventBus.EventBus;
+using Reclaim.Infrastructure.EventBus.Listing;
 
 namespace Reclaim.Application.Services.Implementations;
 
 public class ListingService(
-    OrderQueryHandler queryHandler,
-    OrderCommandHandler commandHandler,
+    ListingQueryHandler queryHandler,
+    ListingCommandHandler commandHandler,
     IDomainEventBus domainEventBus
-    ) : IListingService
+) : IListingService
 {
-    public Task<ListingGetDto> CreateListingAsync(CreateListingCommand command)
+    public async Task<ListingGetDto> CreateListingAsync(CreateListingCommand command)
     {
-        throw new NotImplementedException();
+        var listing = await commandHandler.HandleAsync(command);
+        var listingDto = listing.ToDto();
+        await domainEventBus.Publish(new ListingCreatedEvent
+        {
+            ListingWriteEntity = listing
+        });
+
+        return listingDto;
     }
 
-    public Task<ListingGetDto> UpdateListingAsync(UpdateListingCommand command)
+    public async Task<ListingGetDto> UpdateListingAsync(UpdateListingCommand command)
     {
-        throw new NotImplementedException();
+        var listing = await commandHandler.HandleAsync(command);
+        var listingDto = listing.ToDto();
+        await domainEventBus.Publish(new ListingUpdatedEvent
+        {
+            ListingWriteEntity = listing
+        });
+
+        return listingDto;
     }
 
-    public Task<ListingGetDto> DeleteListingAsync(DeleteListingCommand command)
+    public async Task<ListingGetDto> DeleteListingAsync(DeleteListingCommand command)
     {
-        throw new NotImplementedException();
+        var listing = await commandHandler.HandleAsync(command);
+        var listingDto = listing.ToDto();
+        await domainEventBus.Publish(new ListingDeletedEvent
+        {
+            ListingWriteEntity = listing
+        });
+
+        return listingDto;
     }
 
-    public Task<ListingGetDto> GetListingByIdAsync(GetListingByIdQuery query)
+    public async Task<ListingGetDto> GetListingByIdAsync(GetListingByIdQuery query)
     {
-        throw new NotImplementedException();
+        var listing = await queryHandler.HandleAsync(query);
+        return listing.ToDto();
     }
 
-    public Task<List<ListingGetDto>> GetListingsForUserAsync(GetListingsByUserIdQuery query)
+    public async Task<List<ListingGetDto>> GetListingsForUserAsync(GetListingsByUserIdQuery query)
     {
-        throw new NotImplementedException();
+        var listings = await queryHandler.HandleAsync(query);
+        return listings.Select(l => l.ToDto()).ToList();
     }
 
-    public Task<List<ListingGetDto>> GetLatestListingsAsync(GetLatestListingsQuery query)
+    public async Task<List<ListingGetDto>> GetLatestListingsAsync(GetLatestListingsQuery query)
     {
-        throw new NotImplementedException();
+        var listings = await queryHandler.HandleAsync(query);
+        return listings.Select(l => l.ToDto()).ToList();
     }
 }

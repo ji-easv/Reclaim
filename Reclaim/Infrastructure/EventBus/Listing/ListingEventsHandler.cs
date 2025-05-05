@@ -1,4 +1,6 @@
-﻿using Reclaim.Infrastructure.EventBus.EventBus;
+﻿using Reclaim.Domain.Mappers;
+using Reclaim.Infrastructure.EventBus.EventBus;
+using Reclaim.Infrastructure.Repositories.Read.Interfaces;
 
 namespace Reclaim.Infrastructure.EventBus.Listing;
 
@@ -20,16 +22,22 @@ public class ListingEventsHandler(IDomainEventBus domainEventBus, IServiceProvid
 
     private async Task HandleListingCreatedEvent(ListingCreatedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var listingReadRepository = scope.ServiceProvider.GetRequiredService<IListingReadRepository>();
+        await listingReadRepository.AddAsync(arg.ListingWriteEntity.ToReadEntity([]));
     }
 
-    private Task HandleListingUpdatedEvent(ListingUpdatedEvent arg)
+    private async Task HandleListingUpdatedEvent(ListingUpdatedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var listingReadRepository = scope.ServiceProvider.GetRequiredService<IListingReadRepository>();
+        await listingReadRepository.UpdateAsync(arg.ListingWriteEntity.ToReadEntity([]));
     }
 
-    private Task HandleListingDeletedEvent(ListingDeletedEvent arg)
+    private async Task HandleListingDeletedEvent(ListingDeletedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var listingReadRepository = scope.ServiceProvider.GetRequiredService<IListingReadRepository>();
+        await listingReadRepository.DeleteAsync(arg.ListingWriteEntity.ToReadEntity([]));
     }
 }

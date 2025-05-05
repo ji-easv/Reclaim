@@ -30,4 +30,6 @@ app.AddListingApi();
 app.AddReviewApi();
 app.AddUserApi();
 
+app.UseExceptionHandler();
+
 app.Run();

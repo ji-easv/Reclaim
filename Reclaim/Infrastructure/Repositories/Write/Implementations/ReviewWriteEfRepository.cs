@@ -6,12 +6,12 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class ReviewWriteEfRepository(PostgresDbContext dbContext) : IReviewWriteRepository
 {
-    public Task<ReviewWriteEntity?> GetByIdAsync(string id)
+    public Task<ReviewWriteEntity?> GetByIdAsync(string id, bool includeDeleted = false)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<ReviewWriteEntity>> GetAllAsync()
+    public Task<IEnumerable<ReviewWriteEntity>> GetAllAsync(bool includeDeleted = false)
     {
         throw new NotImplementedException();
     }
@@ -26,7 +26,7 @@ public class ReviewWriteEfRepository(PostgresDbContext dbContext) : IReviewWrite
         throw new NotImplementedException();
     }
 
-    public Task<DateTimeOffset> DeleteAsync(ReviewWriteEntity entity)
+    public Task<ReviewWriteEntity> DeleteAsync(ReviewWriteEntity entity)
     {
         throw new NotImplementedException();
     }

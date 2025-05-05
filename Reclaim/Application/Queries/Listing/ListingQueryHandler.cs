@@ -1,24 +1,32 @@
-﻿using Reclaim.Domain.DTOs;
+﻿using Reclaim.Domain.Entities.Read;
+using Reclaim.Domain.Exceptions;
+using Reclaim.Infrastructure.Repositories.Read.Interfaces;
 
 namespace Reclaim.Application.Queries.Listing;
 
-public class ListingQueryHandler :
-    IQueryHandler<GetLatestListingsQuery, IEnumerable<ListingGetDto>>,
-    IQueryHandler<GetListingsByUserIdQuery, IEnumerable<ListingGetDto>>,
-    IQueryHandler<GetListingByIdQuery, ListingGetDto>
+public class ListingQueryHandler(IListingReadRepository listingReadRepository) :
+    IQueryHandler<GetLatestListingsQuery, IEnumerable<ListingReadEntity>>,
+    IQueryHandler<GetListingsByUserIdQuery, IEnumerable<ListingReadEntity>>,
+    IQueryHandler<GetListingByIdQuery, ListingReadEntity>
 {
-    public Task<IEnumerable<ListingGetDto>> HandleAsync(GetLatestListingsQuery query)
+    public async Task<IEnumerable<ListingReadEntity>> HandleAsync(GetLatestListingsQuery query)
     {
-        throw new NotImplementedException();
+        return await listingReadRepository.GetLatestAsync(query.Page, query.PageSize);
     }
 
-    public Task<ListingGetDto> HandleAsync(GetListingByIdQuery query)
+    public async Task<ListingReadEntity> HandleAsync(GetListingByIdQuery query)
     {
-        throw new NotImplementedException();
+        var listing = await listingReadRepository.GetByIdAsync(query.Id, query.IncludeDeleted);
+        if (listing == null)
+        {
+            throw new NotFoundException($"Listing with ID {query.Id} not found");
+        }
+        
+        return listing;
     }
 
-    public Task<IEnumerable<ListingGetDto>> HandleAsync(GetListingsByUserIdQuery query)
+    public async Task<IEnumerable<ListingReadEntity>> HandleAsync(GetListingsByUserIdQuery query)
     {
-        throw new NotImplementedException();
+       return await listingReadRepository.GetByUserIdAsync(query.UserId);
     }
 }

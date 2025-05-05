@@ -7,13 +7,13 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepository
 {
-    public async Task<UserWriteEntity?> GetByIdAsync(string id)
+    public async Task<UserWriteEntity?> GetByIdAsync(string id, bool includeDeleted = false)
     {
         return await dbContext.Users
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id && (includeDeleted || !x.IsDeleted));
     }
 
-    public async Task<IEnumerable<UserWriteEntity>> GetAllAsync()
+    public async Task<IEnumerable<UserWriteEntity>> GetAllAsync(bool includeDeleted = false)
     {
         return await dbContext.Users
             .AsNoTracking()
@@ -34,17 +34,17 @@ public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepo
         return result.Entity;
     }
 
-    public async Task<DateTimeOffset> DeleteAsync(UserWriteEntity entity)
+    public async Task<UserWriteEntity> DeleteAsync(UserWriteEntity entity)
     {
         // Soft delete (erase personal data)
         entity.IsDeleted = true;
         entity.UpdatedAt = DateTimeOffset.UtcNow;
-        entity.Email = string.Empty;
-        entity.Name = string.Empty;
+        entity.Email = "DELETED";
+        entity.Name = "DELETED";
         
         dbContext.Users.Update(entity);
         await dbContext.SaveChangesAsync();
-        return entity.UpdatedAt.Value;
+        return entity;
     }
 
     public async Task<UserWriteEntity?> GetByEmailAsync(string email)

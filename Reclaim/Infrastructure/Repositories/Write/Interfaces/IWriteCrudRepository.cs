@@ -2,9 +2,9 @@
 
 public interface IWriteCrudRepository<TEntity> where TEntity : class
 {
-    Task<TEntity?> GetByIdAsync(string id);
-    Task<IEnumerable<TEntity>> GetAllAsync();
+    Task<TEntity?> GetByIdAsync(string id, bool includeDeleted = false);
+    Task<IEnumerable<TEntity>> GetAllAsync(bool includeDeleted = false);
     Task<TEntity> AddAsync(TEntity entity);
     Task<TEntity> UpdateAsync(TEntity entity);
-    Task<DateTimeOffset> DeleteAsync(TEntity entity);
+    Task<TEntity> DeleteAsync(TEntity entity);
 }

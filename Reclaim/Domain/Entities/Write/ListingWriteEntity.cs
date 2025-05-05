@@ -24,4 +24,7 @@ public class ListingWriteEntity
     [MaxLength(24)]
     public required string UserId { get; set; }
     public UserWriteEntity? User { get; set; }
+    
+    [MaxLength(24)]
+    public string? OrderId { get; set; }
 }
