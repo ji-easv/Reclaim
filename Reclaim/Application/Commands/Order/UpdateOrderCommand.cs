@@ -2,6 +2,6 @@
 
 namespace Reclaim.Application.Commands.Order;
 
-public class UpdateOrderCommand : ICommand<OrderWriteEntity>
+public class UpdateOrderCommand : ICommand<OrderWriteEntity> 
 {
 }
