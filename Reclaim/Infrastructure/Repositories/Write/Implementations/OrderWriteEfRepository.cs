@@ -26,7 +26,7 @@ public class OrderWriteEfRepository(PostgresDbContext dbContext) : IOrderWriteRe
         throw new NotImplementedException();
     }
 
-    public Task<bool> DeleteAsync(OrderWriteEntity entity)
+    public Task<DateTimeOffset> DeleteAsync(OrderWriteEntity entity)
     {
         throw new NotImplementedException();
     }

@@ -2,7 +2,9 @@
 using Reclaim.Application.Queries.User;
 using Reclaim.Application.Services.Interfaces;
 using Reclaim.Domain.DTOs;
+using Reclaim.Domain.Mappers;
 using Reclaim.Infrastructure.EventBus.EventBus;
+using Reclaim.Infrastructure.EventBus.User;
 
 namespace Reclaim.Application.Services.Implementations;
 
@@ -12,23 +14,40 @@ public class UserService(
     IDomainEventBus domainEventBus
 ) : IUserService
 {
-    public Task<UserGetDto> CreateUserAsync(CreateUserCommand command)
+    public async Task<UserGetDto> CreateUserAsync(CreateUserCommand command)
     {
-        throw new NotImplementedException();
+        var user = await commandHandler.HandleAsync(command);
+        await domainEventBus.Publish(new UserCreatedEvent
+        {
+            UserWriteEntity = user
+        });
+        return user.ToGetDto();
     }
 
-    public Task<UserGetDto> UpdateUserAsync(UpdateUserCommand command)
+    public async Task<UserGetDto> UpdateUserAsync(UpdateUserCommand command)
     {
-        throw new NotImplementedException();
+        var user = await commandHandler.HandleAsync(command);
+        await domainEventBus.Publish(new UserUpdatedEvent
+        {
+            UserWriteEntity = user
+        });
+        return user.ToGetDto();
     }
 
-    public Task<UserGetDto> DeleteUserAsync(DeleteUserCommand command)
+    public async Task<UserGetDto> DeleteUserAsync(DeleteUserCommand command)
     {
-        throw new NotImplementedException();
+        var user = await commandHandler.HandleAsync(command);
+         await domainEventBus.Publish(new UserDeletedEvent
+        {
+            UserId = command.UserId,
+            DeletedAt = user.UpdatedAt!.Value
+        });
+        return user.ToGetDto();
     }
 
-    public Task<UserGetDto> GetUserByIdAsync(GetUserByIdQuery query)
+    public async Task<UserGetDto> GetUserByIdAsync(GetUserByIdQuery query)
     {
-        throw new NotImplementedException();
+        var user = await queryHandler.HandleAsync(query);
+        return user.ToGetDto();
     }
 }

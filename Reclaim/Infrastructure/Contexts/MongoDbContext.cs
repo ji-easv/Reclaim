@@ -5,10 +5,10 @@ namespace Reclaim.Infrastructure.Contexts;
 
 public class MongoDbContext
 {
-    private IMongoCollection<ListingReadEntity> Listings { get; }
-    private IMongoCollection<OrderReadEntity> Orders { get; }
-    private IMongoCollection<UserReadEntity> Users { get; }
-    private IMongoCollection<ReviewReadEntity> Reviews { get; }
+    public IMongoCollection<ListingReadEntity> Listings { get; }
+    public IMongoCollection<OrderReadEntity> Orders { get; }
+    public IMongoCollection<UserReadEntity> Users { get; }
+    public IMongoCollection<ReviewReadEntity> Reviews { get; }
 
     public IMongoDatabase Database { get; }
     

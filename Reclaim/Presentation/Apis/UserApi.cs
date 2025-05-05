@@ -37,7 +37,7 @@ public static class UserApi
     {
         var result = await userService.GetUserByIdAsync(new GetUserByIdQuery
         {
-            
+            UserId = userId
         });
         return TypedResults.Ok(result);
     }
@@ -67,7 +67,7 @@ public static class UserApi
     {
         var result = await userService.DeleteUserAsync(new DeleteUserCommand
         {
-            
+            UserId = userId
         });
         return TypedResults.Ok(result);
     }

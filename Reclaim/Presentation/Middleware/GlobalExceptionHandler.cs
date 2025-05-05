@@ -20,6 +20,16 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
 
             switch (exception)
             {
+                case NotFoundException ex:
+                    statusCode = StatusCodes.Status404NotFound;
+                    title = "NotFoundException";
+                    detail = ex.Message;
+                    break;
+                case InsertionConflictException ex:
+                    statusCode = StatusCodes.Status409Conflict;
+                    title = "InsertionConflictException";
+                    detail = ex.Message;
+                    break;
                 default:
                     statusCode = StatusCodes.Status500InternalServerError;
                     title = "CustomExceptionNotImplemented";

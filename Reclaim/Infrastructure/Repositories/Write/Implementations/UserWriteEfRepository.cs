@@ -1,4 +1,5 @@
-﻿using Reclaim.Domain.Entities.Write;
+﻿using Microsoft.EntityFrameworkCore;
+using Reclaim.Domain.Entities.Write;
 using Reclaim.Infrastructure.Contexts;
 using Reclaim.Infrastructure.Repositories.Write.Interfaces;
 
@@ -6,28 +7,49 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class UserWriteEfRepository(PostgresDbContext dbContext) : IUserWriteRepository
 {
-    public Task<UserWriteEntity?> GetByIdAsync(string id)
+    public async Task<UserWriteEntity?> GetByIdAsync(string id)
     {
-        throw new NotImplementedException();
+        return await dbContext.Users
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public Task<IEnumerable<UserWriteEntity>> GetAllAsync()
+    public async Task<IEnumerable<UserWriteEntity>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await dbContext.Users
+            .AsNoTracking()
+            .ToListAsync();
     }
 
-    public Task<UserWriteEntity> AddAsync(UserWriteEntity entity)
+    public async Task<UserWriteEntity> AddAsync(UserWriteEntity entity)
     {
-        throw new NotImplementedException();
+        var result = await dbContext.Users.AddAsync(entity);
+        await dbContext.SaveChangesAsync();
+        return result.Entity;
     }
 
-    public Task<UserWriteEntity> UpdateAsync(UserWriteEntity entity)
+    public async Task<UserWriteEntity> UpdateAsync(UserWriteEntity entity)
     {
-        throw new NotImplementedException();
+        var result = dbContext.Users.Update(entity);
+        await dbContext.SaveChangesAsync();
+        return result.Entity;
     }
 
-    public Task<bool> DeleteAsync(UserWriteEntity entity)
+    public async Task<DateTimeOffset> DeleteAsync(UserWriteEntity entity)
     {
-        throw new NotImplementedException();
+        // Soft delete (erase personal data)
+        entity.IsDeleted = true;
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+        entity.Email = string.Empty;
+        entity.Name = string.Empty;
+        
+        dbContext.Users.Update(entity);
+        await dbContext.SaveChangesAsync();
+        return entity.UpdatedAt.Value;
+    }
+
+    public async Task<UserWriteEntity?> GetByEmailAsync(string email)
+    {
+        return await dbContext.Users
+            .FirstOrDefaultAsync(x => x.Email == email);
     }
 }
