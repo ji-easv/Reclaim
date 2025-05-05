@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Minio;
 using Reclaim.Application.Commands.Listing;
+using Reclaim.Application.Commands.Media;
 using Reclaim.Application.Commands.Order;
 using Reclaim.Application.Commands.Review;
 using Reclaim.Application.Commands.User;
 using Reclaim.Application.Queries.Listing;
+using Reclaim.Application.Queries.Media;
 using Reclaim.Application.Queries.Order;
 using Reclaim.Application.Queries.Review;
 using Reclaim.Application.Queries.User;
@@ -29,12 +31,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<OrderCommandHandler>();
         services.AddScoped<ReviewCommandHandler>();
         services.AddScoped<UserCommandHandler>();
+        services.AddScoped<MediaCommandHandler>();
 
         // Register all query handlers
         services.AddScoped<ListingQueryHandler>();
         services.AddScoped<OrderQueryHandler>();
         services.AddScoped<ReviewQueryHandler>();
         services.AddScoped<UserQueryHandler>();
+        services.AddScoped<MediaQueryHandler>();
     }
 
     public static void AddDbContexts(this IServiceCollection services, IConfiguration configuration)
@@ -64,7 +68,9 @@ public static class ServiceCollectionExtensions
                     minIoConfig["SecretKey"] ?? throw new ArgumentException("MinIO secret key is null"))
                 .Build();
 
-            return new MinIoContext(minIoClient);
+            var minIoContext = new MinIoContext(minIoClient);
+            minIoContext.InitializeAsync();
+            return minIoContext;
         });
     }
 
@@ -100,6 +106,9 @@ public static class ServiceCollectionExtensions
 
             return new OrderReadRedisRepository(redisContext, TimeSpan.FromSeconds(30), mongoRepository);
         });
+        
+        services.AddScoped<IMediaWriteRepository, MediaWriteEfRepository>();
+        services.AddScoped<IMediaReadRepository, MediaReadMongoRepository>();
 
         // Write Repositories
         services.AddScoped<IUserWriteRepository, UserWriteEfRepository>();
@@ -117,5 +126,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IListingService, ListingService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IMediaService, MediaService>();
     }
 }
