@@ -58,7 +58,7 @@ public static class ReviewApi
     {
         var result = await reviewService.DeleteReviewAsync(new DeleteReviewCommand
         {
-            
+            ReviewId = reviewId
         });
         return TypedResults.Ok(result);
     }
