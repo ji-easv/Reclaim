@@ -1,7 +1,9 @@
 ﻿using Reclaim.Application.Commands.Media;
+using Reclaim.Application.Queries.Listing;
 using Reclaim.Application.Queries.Media;
 using Reclaim.Application.Services.Interfaces;
 using Reclaim.Domain.DTOs;
+using Reclaim.Domain.Exceptions;
 using Reclaim.Infrastructure.EventBus.EventBus;
 using Reclaim.Infrastructure.EventBus.Media;
 
@@ -10,11 +12,13 @@ namespace Reclaim.Application.Services.Implementations;
 public class MediaService(
     MediaCommandHandler mediaCommandHandler,
     MediaQueryHandler mediaQueryHandler,
+    ListingQueryHandler listingQueryHandler,
     IDomainEventBus domainEventBus
 ) : IMediaService
 {
     public async Task<List<MediaGetDto>> CreateMediaAsync(CreateMediaCommand command)
     {
+        await VerifyListingExistsAsync(command.ListingId);
         var mediaWriteEntity = await mediaCommandHandler.HandleAsync(command);
         await domainEventBus.Publish(new MediaCreatedEvent { MediaWriteEntityList = mediaWriteEntity });
 
@@ -44,6 +48,7 @@ public class MediaService(
 
     public async Task<List<MediaGetDto>> GetMediaForListingAsync(GetMediaForListingQuery query)
     {
+        await VerifyListingExistsAsync(query.ListingId);
         var mediaReadEntities = await mediaQueryHandler.HandleAsync(query);
         var mediaGetDtoList = new List<MediaGetDto>();
 
@@ -69,5 +74,18 @@ public class MediaService(
         };
 
         return await mediaQueryHandler.HandleAsync(getSignedUrlByObjectKeyQuery);
+    }
+    
+    private async Task VerifyListingExistsAsync(string listingId)
+    {
+        var listingReadEntity = await listingQueryHandler.HandleAsync(new GetListingByIdQuery
+        {
+            Id = listingId
+        });
+
+        if (listingReadEntity == null)
+        {
+            throw new NotFoundException("Listing not found");
+        }
     }
 }
