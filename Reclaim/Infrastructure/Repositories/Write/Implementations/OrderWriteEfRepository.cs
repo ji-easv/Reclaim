@@ -15,23 +15,32 @@ public class OrderWriteEfRepository(PostgresDbContext dbContext) : IOrderWriteRe
 
     public async Task<IEnumerable<OrderWriteEntity>> GetAllAsync(bool includeDeleted = false)
     {
-        return await Task.FromResult(dbContext.Orders
+        return await dbContext.Orders
             .AsNoTracking()
-            .ToListAsync());
+            .ToListAsync();
     }
 
-    public Task<OrderWriteEntity> AddAsync(OrderWriteEntity entity)
+    public async Task<OrderWriteEntity> AddAsync(OrderWriteEntity entity)
     {
-        throw new NotImplementedException();
+        var result = await dbContext.Orders.AddAsync(entity);
+        await dbContext.SaveChangesAsync();
+        return result.Entity;
     }
 
-    public Task<OrderWriteEntity> UpdateAsync(OrderWriteEntity entity)
+    public async Task<OrderWriteEntity> UpdateAsync(OrderWriteEntity entity)
     {
-        throw new NotImplementedException();
+        var result = dbContext.Orders.Update(entity);
+        await dbContext.SaveChangesAsync();
+        return result.Entity;
     }
 
-    public Task<OrderWriteEntity> DeleteAsync(OrderWriteEntity entity)
+    public async Task<OrderWriteEntity> DeleteAsync(OrderWriteEntity entity)
     {
-        throw new NotImplementedException();
+        entity.IsDeleted = true;
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+        
+        dbContext.Orders.Update(entity);
+        await dbContext.SaveChangesAsync();
+        return entity;
     }
 }

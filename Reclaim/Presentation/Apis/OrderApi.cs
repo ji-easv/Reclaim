@@ -58,7 +58,7 @@ public static class OrderApi
     {
         var result = await orderService.DeleteOrderAsync(new DeleteOrderCommand
         {
-            
+            Id = null
         });
         return TypedResults.Ok(result);
     }

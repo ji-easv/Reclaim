@@ -1,11 +1,12 @@
 ﻿using System.Data;
 using Reclaim.Domain.Entities.Write;
-using Reclaim.Infrastructure.EventBus.EventBus;
+using Reclaim.Domain.Exceptions;
+using Reclaim.Infrastructure.Repositories.Write.Interfaces;
 using Reclaim.Infrastructure.UnitOfWork;
 
 namespace Reclaim.Application.Commands.Order;
 
-public class OrderCommandHandler(IDomainEventBus domainEventBus, IUnitOfWork unitOfWork)
+public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository orderWriteRepository)
     : ICommandHandler<CreateOrderCommand, OrderWriteEntity>,
         ICommandHandler<UpdateOrderCommand, OrderWriteEntity>,
         ICommandHandler<DeleteOrderCommand, OrderWriteEntity>
@@ -13,17 +14,52 @@ public class OrderCommandHandler(IDomainEventBus domainEventBus, IUnitOfWork uni
     public async Task<OrderWriteEntity> HandleAsync(CreateOrderCommand command)
     {
         await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
-        //var existingOrder = await orderWriteRepository.GetByIdAsync(command.UserId);
-        throw new NotImplementedException();
+        var existingOrder = await orderWriteRepository.GetByIdAsync(command.Id);
+        if (existingOrder is not null)
+        {
+            throw new InsertionConflictException($"Order with ID {command.Id} already exists.");
+        }
+        
+        var order = new OrderWriteEntity
+        {
+            UserId = command.UserId,
+            Listings = command.Listings,
+            IsDeleted = false
+        };
+        
+        var createdOrder = await orderWriteRepository.AddAsync(order);
+        await unitOfWork.CommitAsync();
+        return createdOrder;
     }
 
-    public Task<OrderWriteEntity> HandleAsync(DeleteOrderCommand command)
+    public async Task<OrderWriteEntity> HandleAsync(DeleteOrderCommand command)
     {
-        throw new NotImplementedException();
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        var order = await orderWriteRepository.GetByIdAsync(command.Id);
+        if (order is null)
+        {
+            throw new NotFoundException($"Order with ID {command.Id} not found.");
+        }
+        var deletedEntity = await orderWriteRepository.DeleteAsync(order);
+        await unitOfWork.CommitAsync();
+        return deletedEntity;
     }
 
-    public Task<OrderWriteEntity> HandleAsync(UpdateOrderCommand command)
+    public async Task<OrderWriteEntity> HandleAsync(UpdateOrderCommand command)
     {
-        throw new NotImplementedException();
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        var order = await orderWriteRepository.GetByIdAsync(command.Id);
+        if (order is null)
+        {
+            throw new NotFoundException($"Order with ID {command.Id} not found.");
+        }
+        order.UserId = command.UserId;
+        order.Listings = command.Listings;
+        order.Status = command.Status;
+        order.UpdatedAt = DateTimeOffset.UtcNow;
+        
+        var updatedOrder = await orderWriteRepository.UpdateAsync(order);
+        await unitOfWork.CommitAsync();
+        return updatedOrder;
     }
 }
