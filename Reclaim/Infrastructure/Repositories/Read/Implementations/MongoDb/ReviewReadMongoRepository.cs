@@ -14,18 +14,18 @@ public class ReviewReadMongoRepository(MongoDbContext mongoDbContext) : IReviewR
             .FirstOrDefaultAsync();
     }
 
-    public async Task<ReviewReadEntity?> GetBySellerIdAsync(string sellerId)
+    public async Task<List<ReviewReadEntity>> GetBySellerIdAsync(string sellerId)
     {
         return await mongoDbContext.Reviews
             .Find(review => review.SellerId.ToString() == sellerId)
-            .FirstOrDefaultAsync();
+            .ToListAsync();
     }
     
-    public async Task<ReviewReadEntity?> GetByUserIdAsync(string userId)
+    public async Task<List<ReviewReadEntity>> GetByUserIdAsync(string userId)
     {
         return await mongoDbContext.Reviews
             .Find(review => review.Author.Id.ToString() == userId)
-            .FirstOrDefaultAsync();
+            .ToListAsync();
     }
 
     public async Task<ReviewReadEntity> AddAsync(ReviewReadEntity review)

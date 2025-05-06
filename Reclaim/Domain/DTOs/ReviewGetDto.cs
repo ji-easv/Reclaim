@@ -2,7 +2,7 @@
 
 public class ReviewGetDto
 {
-    public string Id { get; set; } = null!;
+    public required string Id { get; set; }
     public required string Content { get; set; }
     public required int Rating { get; set; }
     public DateTimeOffset CreatedAt { get; set; }

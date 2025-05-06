@@ -18,13 +18,11 @@ public class ReviewWriteEfRepository(PostgresDbContext dbContext) : IReviewWrite
 
     public async Task<IEnumerable<ReviewWriteEntity>> GetAllAsync(bool includeDeleted = false)
     {
-        var query = dbContext.Reviews
+        return await dbContext.Reviews
             .Include(r => r.Author)
             .Include(r => r.Seller)
             .Where(r => includeDeleted || !r.IsDeleted)
-            .AsQueryable();
-        
-        return await query.ToListAsync();
+            .ToListAsync();
     }
 
     public async Task<ReviewWriteEntity> AddAsync(ReviewWriteEntity entity)
