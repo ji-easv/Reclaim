@@ -33,10 +33,18 @@ public class OrderReadMongoRepository(MongoDbContext mongoDbContext) : IOrderRea
         var filter = Builders<OrderReadEntity>.Filter.Eq(order => order.Id, entity.Id);
         var update = Builders<OrderReadEntity>.Update
             .Set(order => order.Status, entity.Status)
-            .Set(order => order.UpdatedAt, entity.UpdatedAt)
-            .Set(order => order.IsDeleted, entity.IsDeleted);
+            .Set(order => order.UpdatedAt, entity.UpdatedAt);
         await mongoDbContext.Orders.UpdateOneAsync(filter, update);
         return entity;
     }
-    
+
+    public async Task<DateTimeOffset> DeleteAsync(OrderReadEntity entity)
+    {
+        var filter = Builders<OrderReadEntity>.Filter.Eq(order => order.Id, entity.Id);
+        var update = Builders<OrderReadEntity>.Update
+            .Set(order => order.IsDeleted, true)
+            .Set(order => order.UpdatedAt, entity.UpdatedAt);
+        await mongoDbContext.Orders.UpdateOneAsync(filter, update);
+        return entity.UpdatedAt ?? DateTimeOffset.UtcNow;
+    }
 }

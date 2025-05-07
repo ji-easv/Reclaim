@@ -1,4 +1,6 @@
-﻿using Reclaim.Infrastructure.EventBus.EventBus;
+﻿using Reclaim.Domain.Mappers;
+using Reclaim.Infrastructure.EventBus.EventBus;
+using Reclaim.Infrastructure.Repositories.Read.Interfaces;
 
 namespace Reclaim.Infrastructure.EventBus.Order;
 
@@ -17,19 +19,29 @@ public class OrderEventsHandler(IDomainEventBus domainEventBus, IServiceProvider
         await domainEventBus.Unsubscribe<OrderUpdatedEvent>(HandleOrderUpdatedEvent);
         await domainEventBus.Unsubscribe<OrderDeletedEvent>(HandleOrderDeletedEvent);
     }
-
-    private async Task HandleOrderDeletedEvent(OrderDeletedEvent arg)
-    {
-        throw new NotImplementedException();
+    private async Task HandleOrderCreatedEvent(OrderCreatedEvent arg)
+    { 
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var readRepository = scope.ServiceProvider.GetService<IOrderReadRepository>();
+            var readEntity = arg.OrderWriteEntity.ToReadEntity();
+            await readRepository.AddAsync(readEntity);
+        }
     }
-
     private async Task HandleOrderUpdatedEvent(OrderUpdatedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var readRepository = scope.ServiceProvider.GetService<IOrderReadRepository>();
+        var readEntity = arg.OrderWriteEntity.ToReadEntity();
+        await readRepository.UpdateAsync(readEntity);
     }
-
-    private async Task HandleOrderCreatedEvent(OrderCreatedEvent arg)
+    private async Task HandleOrderDeletedEvent(OrderDeletedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var readRepository = scope.ServiceProvider.GetService<IOrderReadRepository>();
+        var existingEntity = await readRepository.GetByIdAsync(arg.OrderId);
+        existingEntity!.IsDeleted = true;
+        await readRepository.UpdateAsync(existingEntity);
     }
+    
 }

@@ -9,4 +9,8 @@ public interface IOrderReadRepository
     Task<IEnumerable<OrderReadEntity>> GetAllAsync(string userId);
     Task<OrderReadEntity> AddAsync(OrderReadEntity entity);
     Task<OrderReadEntity> UpdateAsync(OrderReadEntity entity);
+    
+    Task<DateTimeOffset> DeleteAsync(OrderReadEntity entity);
+    
+    
 }
