@@ -1,17 +1,24 @@
-﻿using Reclaim.Domain.DTOs;
+﻿using Reclaim.Domain.Entities.Read;
+using Reclaim.Domain.Exceptions;
+using Reclaim.Infrastructure.Repositories.Read.Interfaces;
 
 namespace Reclaim.Application.Queries.Order;
 
-public class OrderQueryHandler : IQueryHandler<GetOrdersByUserIdQuery, IEnumerable<OrderGetDto>>,
-    IQueryHandler<GetOrderByIdQuery, OrderGetDto>
+public class OrderQueryHandler(IOrderReadRepository orderReadRepository) : IQueryHandler<GetOrdersByUserIdQuery, IEnumerable<OrderReadEntity>>,
+    IQueryHandler<GetOrderByIdQuery, OrderReadEntity>
 {
-    public Task<OrderGetDto> HandleAsync(GetOrderByIdQuery query)
+    public async Task<OrderReadEntity> HandleAsync(GetOrderByIdQuery query)
     {
-        throw new NotImplementedException();
+        var order = await orderReadRepository.GetByIdAsync(query.OrderId);
+        if (order is null)
+        {
+            throw new NotFoundException($"Order with ID {query.OrderId} not found.");
+        }
+        return order;
     }
 
-    public Task<IEnumerable<OrderGetDto>> HandleAsync(GetOrdersByUserIdQuery query)
+    public async Task<IEnumerable<OrderReadEntity>> HandleAsync(GetOrdersByUserIdQuery query)
     {
-        throw new NotImplementedException();
+        return await orderReadRepository.GetAllAsync(query.UserId);
     }
 }

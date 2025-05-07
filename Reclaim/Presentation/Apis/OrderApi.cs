@@ -70,7 +70,7 @@ public static class OrderApi
     {
         var result = await orderService.GetOrderByIdAsync(new GetOrderByIdQuery
         {
-            
+            OrderId = orderId
         });
         return TypedResults.Ok(result);
     }
@@ -82,7 +82,7 @@ public static class OrderApi
     {
         var result = await orderService.GetOrdersForUserAsync(new GetOrdersByUserIdQuery
         {
-            
+            UserId = userId
         });
         return TypedResults.Ok(result);
     }

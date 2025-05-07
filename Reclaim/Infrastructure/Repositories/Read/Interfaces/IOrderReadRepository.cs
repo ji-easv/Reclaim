@@ -4,7 +4,6 @@ namespace Reclaim.Infrastructure.Repositories.Read.Interfaces;
 
 public interface IOrderReadRepository
 {
-    
     Task<OrderReadEntity?> GetByIdAsync(string id);
     Task<IEnumerable<OrderReadEntity>> GetAllAsync(string userId);
     Task<OrderReadEntity> AddAsync(OrderReadEntity entity);
