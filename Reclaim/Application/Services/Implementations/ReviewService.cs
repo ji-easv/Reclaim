@@ -2,7 +2,9 @@
 using Reclaim.Application.Queries.Review;
 using Reclaim.Application.Services.Interfaces;
 using Reclaim.Domain.DTOs;
+using Reclaim.Domain.Mappers;
 using Reclaim.Infrastructure.EventBus.EventBus;
+using Reclaim.Infrastructure.EventBus.Review;
 
 namespace Reclaim.Application.Services.Implementations;
 
@@ -12,28 +14,47 @@ public class ReviewService(
     IDomainEventBus domainEventBus
     ) : IReviewService
 {
-    public Task<ReviewGetDto> CreateReviewAsync(CreateReviewCommand command)
+    public async Task<ReviewGetDto> CreateReviewAsync(CreateReviewCommand command)
     {
-        throw new NotImplementedException();
+        var review = await commandHandler.HandleAsync(command);
+        await domainEventBus.Publish(new ReviewCreatedEvent
+        {
+            ReviewWriteEntity = review
+        });
+        return review.ToDto();
+
     }
 
-    public Task<ReviewGetDto> UpdateReviewAsync(UpdateReviewCommand command)
+    public async Task<ReviewGetDto> UpdateReviewAsync(UpdateReviewCommand command)
     {
-        throw new NotImplementedException();
+        var review = await commandHandler.HandleAsync(command);
+        await domainEventBus.Publish(new ReviewUpdatedEvent
+        {
+            ReviewWriteEntity = review
+        });
+        return review.ToDto();
     }
 
-    public Task<ReviewGetDto> DeleteReviewAsync(DeleteReviewCommand command)
+    public async Task<ReviewGetDto> DeleteReviewAsync(DeleteReviewCommand command)
     {
-        throw new NotImplementedException();
+        var review = await commandHandler.HandleAsync(command);
+        await domainEventBus.Publish(new ReviewDeletedEvent
+        {
+            ReviewId = command.ReviewId,
+            DeletedAt = review.UpdatedAt!.Value
+        });
+        return review.ToDto();
     }
 
-    public Task<List<ReviewGetDto>> GetReviewsWrittenByUserAsync(GetReviewsWrittenByUserId query)
+    public async Task<List<ReviewGetDto>> GetReviewsWrittenByUserAsync(GetReviewsWrittenByUserId query)
     {
-        throw new NotImplementedException();
+        var reviews = await queryHandler.HandleAsync(query);
+        return reviews.ToList();
     }
 
-    public Task<List<ReviewGetDto>> GetReviewsForSellerAsync(GetReviewsForSellerQuery query)
+    public async Task<List<ReviewGetDto>> GetReviewsForSellerAsync(GetReviewsForSellerQuery query)
     {
-        throw new NotImplementedException();
+        var reviews = await queryHandler.HandleAsync(query);
+        return reviews.ToList();
     }
 }

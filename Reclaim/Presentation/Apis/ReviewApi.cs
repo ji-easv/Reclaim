@@ -58,7 +58,7 @@ public static class ReviewApi
     {
         var result = await reviewService.DeleteReviewAsync(new DeleteReviewCommand
         {
-            
+            ReviewId = reviewId
         });
         return TypedResults.Ok(result);
     }
@@ -70,7 +70,7 @@ public static class ReviewApi
     {
         var result = await reviewService.GetReviewsWrittenByUserAsync(new GetReviewsWrittenByUserId
         {
-            
+            UserId = userId
         });
         return TypedResults.Ok(result);
     }
@@ -82,7 +82,7 @@ public static class ReviewApi
     {
         var result = await reviewService.GetReviewsForSellerAsync(new GetReviewsForSellerQuery
         {
-            
+            SellerId = userId
         });
         return TypedResults.Ok(result);
     }

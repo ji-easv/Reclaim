@@ -19,6 +19,9 @@ public class ReviewReadEntity
     public DateTimeOffset? UpdatedAt { get; set; } 
     
     [BsonRequired]
+    public required bool IsDeleted { get; set; }
+    
+    [BsonRequired]
     public required UserReadEntity Author { get; set; }
     
     [BsonRequired]

@@ -1,4 +1,6 @@
-﻿using Reclaim.Infrastructure.EventBus.EventBus;
+﻿using Reclaim.Domain.Mappers;
+using Reclaim.Infrastructure.EventBus.EventBus;
+using Reclaim.Infrastructure.Repositories.Read.Interfaces;
 
 namespace Reclaim.Infrastructure.EventBus.Review;
 
@@ -20,16 +22,26 @@ public class ReviewEventsHandler(IDomainEventBus domainEventBus, IServiceProvide
 
     private async Task HandleReviewCreatedEvent(ReviewCreatedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var readRepository = scope.ServiceProvider.GetService<IReviewReadRepository>();
+        var readEntity = arg.ReviewWriteEntity.ToReadEntity();
+        await readRepository.AddAsync(readEntity);
     }
 
     private async Task HandleReviewUpdatedEvent(ReviewUpdatedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var readRepository = scope.ServiceProvider.GetService<IReviewReadRepository>();
+        var readEntity = arg.ReviewWriteEntity.ToReadEntity();
+        await readRepository.UpdateAsync(readEntity);
     }
 
     private async Task HandleReviewDeletedEvent(ReviewDeletedEvent arg)
     {
-        throw new NotImplementedException();
+        using var scope = serviceProvider.CreateScope();
+        var readRepository = scope.ServiceProvider.GetService<IReviewReadRepository>();
+        var existingEntity = await readRepository.GetByIdAsync(arg.ReviewId);
+        existingEntity.IsDeleted = true;
+        await readRepository.UpdateAsync(existingEntity);
     }
 }
