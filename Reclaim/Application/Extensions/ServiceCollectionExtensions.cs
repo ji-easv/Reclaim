@@ -1,10 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using Minio;
 using Reclaim.Application.Commands.Listing;
+using Reclaim.Application.Commands.Media;
 using Reclaim.Application.Commands.Order;
 using Reclaim.Application.Commands.Review;
 using Reclaim.Application.Commands.User;
 using Reclaim.Application.Queries.Listing;
+using Reclaim.Application.Queries.Media;
 using Reclaim.Application.Queries.Order;
 using Reclaim.Application.Queries.Review;
 using Reclaim.Application.Queries.User;
@@ -29,12 +32,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<OrderCommandHandler>();
         services.AddScoped<ReviewCommandHandler>();
         services.AddScoped<UserCommandHandler>();
+        services.AddScoped<MediaCommandHandler>();
 
         // Register all query handlers
         services.AddScoped<ListingQueryHandler>();
         services.AddScoped<OrderQueryHandler>();
         services.AddScoped<ReviewQueryHandler>();
         services.AddScoped<UserQueryHandler>();
+        services.AddScoped<MediaQueryHandler>();
     }
 
     public static void AddDbContexts(this IServiceCollection services, IConfiguration configuration)
@@ -57,14 +62,19 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MinIoContext>(_ =>
         {
             var minIoConfig = configuration.GetSection("MinIo");
+            var proxyHost = minIoConfig["ProxyHost"] ?? throw new ArgumentException("MinIO proxy host is null");
+            var proxyPort = int.Parse(minIoConfig["ProxyPort"] ?? throw new ArgumentException("MinIO proxy port is null")); 
             var minIoClient = new MinioClient()
                 .WithEndpoint(minIoConfig["Endpoint"] ?? throw new ArgumentException("MinIO endpoint is null"))
                 .WithCredentials(
                     minIoConfig["AccessKey"] ?? throw new ArgumentException("MinIO access key is null"),
                     minIoConfig["SecretKey"] ?? throw new ArgumentException("MinIO secret key is null"))
+                .WithProxy(new WebProxy(proxyHost, proxyPort))
                 .Build();
 
-            return new MinIoContext(minIoClient);
+            var minIoContext = new MinIoContext(minIoClient);
+            minIoContext.InitializeAsync();
+            return minIoContext;
         });
     }
 
@@ -100,6 +110,9 @@ public static class ServiceCollectionExtensions
 
             return new OrderReadRedisRepository(redisContext, TimeSpan.FromSeconds(30), mongoRepository);
         });
+        
+        services.AddScoped<IMediaWriteRepository, MediaWriteEfRepository>();
+        services.AddScoped<IMediaReadRepository, MediaReadMongoRepository>();
 
         // Write Repositories
         services.AddScoped<IUserWriteRepository, UserWriteEfRepository>();
@@ -117,5 +130,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IListingService, ListingService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IMediaService, MediaService>();
     }
 }

@@ -14,6 +14,7 @@ public class ReviewWriteEntity
     
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; } 
+    public required bool IsDeleted { get; set; }
     
     // Navigation properties
     [MaxLength(24)]

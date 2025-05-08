@@ -9,4 +9,5 @@ public class ListingGetDto
     public required DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
     public required UserGetDto User { get; set; }
+    public required List<MediaGetDto> Media { get; set; } 
 }

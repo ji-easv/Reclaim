@@ -1,17 +1,23 @@
 ﻿using Reclaim.Domain.DTOs;
+using Reclaim.Domain.Mappers;
+using Reclaim.Infrastructure.Repositories.Read.Interfaces;
 
 namespace Reclaim.Application.Queries.Review;
 
-public class ReviewQueryHandler : IQueryHandler<GetReviewsForSellerQuery, IEnumerable<ReviewGetDto>>,
+public class ReviewQueryHandler(IReviewReadRepository reviewReadRepository) : IQueryHandler<GetReviewsForSellerQuery, IEnumerable<ReviewGetDto>>,
     IQueryHandler<GetReviewsWrittenByUserId, IEnumerable<ReviewGetDto>>
 {
-    public Task<IEnumerable<ReviewGetDto>> HandleAsync(GetReviewsWrittenByUserId query)
+    public async Task<IEnumerable<ReviewGetDto>> HandleAsync(GetReviewsWrittenByUserId query)
     {
-        throw new NotImplementedException();
+        var reviews = await reviewReadRepository.GetByUserIdAsync(query.UserId);
+
+        return reviews.Select(r => r.ToDto());
     }
 
-    public Task<IEnumerable<ReviewGetDto>> HandleAsync(GetReviewsForSellerQuery query)
+    public async Task<IEnumerable<ReviewGetDto>> HandleAsync(GetReviewsForSellerQuery query)
     {
-        throw new NotImplementedException();
+        var reviews = await reviewReadRepository.GetBySellerIdAsync(query.SellerId);
+
+        return reviews.Select(r => r.ToDto());
     }
 }
