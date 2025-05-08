@@ -44,7 +44,7 @@ The main benefits of using a relational database for this purpose include:
 - Using transactions to ensure that all operations are completed successfully or none at all, which is crucial for maintaining data consistency.
   - For example, when a user places an order, we need to ensure that the order is created, the listings are updated, and cannot be bought by another user.
 
-![db-schema.png](db-schema.png)
+![write-db-schema.png](write-db-schema.png)
 
 #### Read:
 As for read operations, we went with `MongoDB`, which is a NoSQL database that allows for flexible schema design and rapid scalability.
