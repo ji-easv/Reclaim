@@ -34,6 +34,8 @@ You must clearly outline and justify your design choices addressing the followin
 As is a common practice in the CQRS pattern, we have chosen to use two different databases for the read and write sides of the application. 
 This allows optimization of each database for its specific purpose, and allows us to use different technologies for each side.
 
+![read-db-schema.png](read-db-schema.png)
+
 #### Write:
 For the write side, we have chosen a traditional relational database, `PostgreSQL`, which allows us to use transactions and ensure data integrity. 
 The main benefits of using a relational database for this purpose include:
