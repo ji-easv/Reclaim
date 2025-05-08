@@ -33,11 +33,13 @@ You must clearly outline and justify your design choices addressing the followin
    - Define the data models and storage strategies you will use. 
    - Clearly document how you will store and manage different kinds of data (listings, user profiles, orders, reviews).
 
+![db-schema.png](db-schema.png)
+
 3. **Integration of Cloud Storage**:
    - Describe how you will integrate cloud storage for images and other media. 
    - Include a clear explanation of interactions between cloud storage and your databases.
 
-MinIO is used as an S3 bucket for storing images, which are uploaded by users. This is because databases are not famous for their performance in storing large binary files. 
+`MinIO` is used as an S3 bucket for storing images, which are uploaded by users. This is because databases are not famous for their performance in storing large binary files. 
 Therefore, the database is used to store metadata about the images, and the generated object key, which references the image in the MinIO bucket. 
 
 When the images are retrieved, the application creates a presigned URL for the image, allowing users to access it. The URL is only valid for a limited time, ensuring security and privacy.
@@ -48,8 +50,56 @@ In terms of the read side, the media do not have their own collection. Instead, 
 4. **Caching Strategy**:
    - Define your caching approach, including technologies used, cache invalidation strategy, and which data will be cached.
 
-Redis is used as a caching solution. The cache is used to store frequently accessed data, such as item listings, and orders. 
-We tried to map out the data that would most likely be accessed frequently (e.g., the latest listings, ) and store that in the cache.
+`Redis` is used as a caching solution. The cache is used to store frequently accessed data, such as item listings, and orders. 
+We tried to map out the data that would most likely be accessed frequently (e.g., a user's listings) and store that in the cache for quick retrieval.
+
+Since both the MongoDb and Redis repositories are implemented using the [IListingReadRepository](Reclaim/Infrastructure/Repositories/Read/Interfaces/IListingReadRepository.cs), we are using a decorator pattern to register both repositories.
+This enables the service to only have `IListingReadRepository` as a dependency (and in this case the [Redis repository](Reclaim/Infrastructure/Repositories/Read/Implementations/Redis/ListingReadRedisRepository.cs) is actually injected), as the Redis repository wraps the MongoDb repository. 
+We also don't run into issues with the dependency injection container, as we are not trying to register the same interface twice. 
+
+There could be arguments made for not letting the infrastructure layer not be responsible for deciding which repository to contact for the data, as it could be seen as a business decision.
+However, we believe that this is a good approach, as it abstracts away the data access layer completely from the application layer, and allows us to easily switch out the implementation if needed.
+
+Registration of the repositories:
+```csharp
+services.AddScoped<ListingReadMongoRepository>();
+services.AddScoped<IListingReadRepository>(provider =>
+{
+   var mongoRepository = provider.GetService<ListingReadMongoRepository>()
+                         ?? throw new ArgumentNullException(nameof(ListingReadMongoRepository),
+                             "Mongo repository is null");
+
+   var redisContext = provider.GetService<RedisContext>()
+                      ?? throw new ArgumentNullException(nameof(RedisContext), "Redis context is null");
+
+   return new ListingReadRedisRepository(redisContext, TimeSpan.FromSeconds(30), mongoRepository);
+});
+```
+
+Example of how the Redis repository is used to cache the data, or delegate to the MongoDb repository if the data is not in the cache:
+```csharp
+public async Task<ListingReadEntity?> GetByIdAsync(string id, bool includeDeleted = false)
+{
+  var cachedListing = await Db.StringGetAsync(id);
+  if (cachedListing.IsNullOrEmpty)
+  {
+      var result = await persistentRepository.GetByIdAsync(id, includeDeleted);
+      if (result == null)
+      {
+          return null;
+      }
+      
+      await IndexAsync(result);
+      return result;
+  }
+  
+  return JsonSerializer.Deserialize<ListingReadEntity>(cachedListing!, JsonSerializerOptions);
+}
+```
+
+The cache is invalidated through the use of domain events and corresponding handlers, like the [listing event handler](Reclaim/Infrastructure/EventBus/Listing/ListingEventsHandler.cs) 
+that is responsible for listening to events published by the [ListingWriteService](Reclaim/Application/Services/Implementations/ListingService.cs) and invalidating the cache when a listing is modified.
+
 
 5. **CQRS Implementation**:
    - Explain your approach to separating read and write operations, if applicable. 

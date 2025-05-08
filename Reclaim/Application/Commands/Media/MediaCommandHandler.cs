@@ -15,7 +15,7 @@ public class MediaCommandHandler(
     : ICommandHandler<CreateMediaCommand, List<MediaWriteEntity>>,
         ICommandHandler<DeleteMediaCommand, List<MediaWriteEntity>>
 {
-    private readonly string[] ValidImageTypes = ["image/jpeg", "image/png", "image/gif"];
+    private readonly string[] _validImageTypes = ["image/jpeg", "image/png", "image/gif"];
     
     public async Task<List<MediaWriteEntity>> HandleAsync(CreateMediaCommand command)
     {
@@ -25,7 +25,7 @@ public class MediaCommandHandler(
         foreach (var file in command.Files)
         {
             // Check if the file is a valid image
-            if (file.Length == 0 || !ValidImageTypes.Contains(file.ContentType))
+            if (file.Length == 0 || !_validImageTypes.Contains(file.ContentType))
             {
                 throw new InvalidFileException("Invalid file, only images are allowed");
             }
