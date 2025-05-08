@@ -62,4 +62,13 @@ public class MediaWriteEfRepository(PostgresDbContext dbContext) : IMediaWriteRe
 
         return mediaWriteEntities;
     }
+
+    public async Task<List<MediaWriteEntity>> GetByListingIdAsync(string listingId)
+    {
+        var media = await dbContext.Media
+            .Where(x => x.ListingId == listingId)
+            .ToListAsync();
+
+        return media;
+    }
 }

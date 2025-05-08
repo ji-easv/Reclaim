@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Reclaim.Domain.Converters;
 using Reclaim.Domain.Entities.Read;
 using Reclaim.Infrastructure.Contexts;
 using Reclaim.Infrastructure.Repositories.Read.Interfaces;
@@ -12,6 +13,14 @@ public class OrderReadRedisRepository(
     IOrderReadRepository persistantRepository) : IOrderReadRepository
 {
     private IDatabase Db => redisContext.Database;
+    private static JsonSerializerOptions JsonSerializerOptions => new()
+    {
+        Converters =
+        {
+            new ObjectIdJsonConverter()
+        }
+    };
+    
     public async Task<OrderReadEntity?> GetByIdAsync(string id)
     {
         // Try to get the entity from Redis cache first
@@ -20,7 +29,7 @@ public class OrderReadRedisRepository(
         if (cachedData.HasValue)
         {
             // If found in cache, deserialize and return
-            return JsonSerializer.Deserialize<OrderReadEntity>(cachedData);
+            return JsonSerializer.Deserialize<OrderReadEntity>(cachedData, JsonSerializerOptions);
         }
         
         // If not in cache, get from persistent repository
@@ -78,7 +87,7 @@ public class OrderReadRedisRepository(
     private async Task IndexAsync(OrderReadEntity entity)
     {
         var orderId = entity.Id.ToString();
-        var serializedOrder = JsonSerializer.Serialize(entity);
+        var serializedOrder = JsonSerializer.Serialize(entity, JsonSerializerOptions);
         await Db.StringSetAsync(orderId, serializedOrder, timeToLive);
     }
 }

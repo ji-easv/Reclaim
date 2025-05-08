@@ -6,4 +6,5 @@ public interface IMediaWriteRepository : IWriteCrudRepository<MediaWriteEntity>
 {
     Task<List<MediaWriteEntity>> AddRangeAsync(List<MediaWriteEntity> mediaWriteEntities);
     Task<List<MediaWriteEntity>> DeleteRangeAsync(List<MediaWriteEntity> mediaWriteEntities);
+    Task<List<MediaWriteEntity>> GetByListingIdAsync(string listingId);
 }

@@ -7,7 +7,11 @@ using Reclaim.Infrastructure.UnitOfWork;
 
 namespace Reclaim.Application.Commands.Order;
 
-public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository orderWriteRepository, IListingWriteRepository listingWriteRepository)
+public class OrderCommandHandler(
+    IUnitOfWork unitOfWork, 
+    IOrderWriteRepository orderWriteRepository, 
+    IListingWriteRepository listingWriteRepository
+    )
     : ICommandHandler<CreateOrderCommand, OrderWriteEntity>,
         ICommandHandler<UpdateOrderCommand, OrderWriteEntity>,
         ICommandHandler<DeleteOrderCommand, OrderWriteEntity>
@@ -30,7 +34,7 @@ public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository o
             {
                 throw new AlreadyBoughtException($"Listing with ID {listingId} is already bought.");
             }
-
+            
             totalPrice += listing.Price;
             listing.OrderId = orderId;
             listings.Add(listing);
@@ -52,24 +56,11 @@ public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository o
     public async Task<OrderWriteEntity> HandleAsync(UpdateOrderCommand command)
     {
         await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
-        
         var order = await orderWriteRepository.GetByIdAsync(command.Id);
         
-        var listings = new List<ListingWriteEntity>();
-        
-        foreach (var listingId in command.Listings)
+        if (order is null)
         {
-            var listing = await listingWriteRepository.GetByIdAsync(listingId);
-            if (listing is null)
-            {
-                throw new NotFoundException($"Listing with ID {listingId} not found.");
-            }
-            if (listing.OrderId != null)
-            {
-                throw new AlreadyBoughtException($"Listing with ID {listingId} is already bought.");
-            }
-            
-            listings.Add(listing);
+            throw new NotFoundException($"Order with ID {command.Id} not found.");
         }
         
         order.Status = command.Status;
@@ -82,7 +73,7 @@ public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository o
     
     public async Task<OrderWriteEntity> HandleAsync(DeleteOrderCommand command)
     {
-        await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         var order = await orderWriteRepository.GetByIdAsync(command.Id);
         if (order is null)
         {
@@ -92,6 +83,4 @@ public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository o
         await unitOfWork.CommitAsync();
         return deletedEntity;
     }
-
-
 }

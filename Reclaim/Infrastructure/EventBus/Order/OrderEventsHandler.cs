@@ -19,15 +19,15 @@ public class OrderEventsHandler(IDomainEventBus domainEventBus, IServiceProvider
         await domainEventBus.Unsubscribe<OrderUpdatedEvent>(HandleOrderUpdatedEvent);
         await domainEventBus.Unsubscribe<OrderDeletedEvent>(HandleOrderDeletedEvent);
     }
+    
     private async Task HandleOrderCreatedEvent(OrderCreatedEvent arg)
-    { 
-        using (var scope = serviceProvider.CreateScope())
-        {
-            var readRepository = scope.ServiceProvider.GetService<IOrderReadRepository>();
-            var readEntity = arg.OrderWriteEntity.ToReadEntity();
-            await readRepository.AddAsync(readEntity);
-        }
+    {
+        using var scope = serviceProvider.CreateScope();
+        var readRepository = scope.ServiceProvider.GetService<IOrderReadRepository>();
+        var readEntity = arg.OrderWriteEntity.ToReadEntity();
+        await readRepository.AddAsync(readEntity);
     }
+    
     private async Task HandleOrderUpdatedEvent(OrderUpdatedEvent arg)
     {
         using var scope = serviceProvider.CreateScope();
@@ -35,6 +35,7 @@ public class OrderEventsHandler(IDomainEventBus domainEventBus, IServiceProvider
         var readEntity = arg.OrderWriteEntity.ToReadEntity();
         await readRepository.UpdateAsync(readEntity);
     }
+    
     private async Task HandleOrderDeletedEvent(OrderDeletedEvent arg)
     {
         using var scope = serviceProvider.CreateScope();
@@ -44,5 +45,4 @@ public class OrderEventsHandler(IDomainEventBus domainEventBus, IServiceProvider
         existingEntity.UpdatedAt = arg.DeletedAt;
         await readRepository.UpdateAsync(existingEntity);
     }
-    
 }

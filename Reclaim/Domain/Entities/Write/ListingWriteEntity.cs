@@ -27,4 +27,6 @@ public class ListingWriteEntity
     
     [MaxLength(24)]
     public string? OrderId { get; set; }
+    
+    public List<MediaWriteEntity> Media { get; set; } = [];
 }
