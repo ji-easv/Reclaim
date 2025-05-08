@@ -16,7 +16,6 @@ public class OrderWriteEfRepository(PostgresDbContext dbContext) : IOrderWriteRe
     public async Task<IEnumerable<OrderWriteEntity>> GetAllAsync(bool includeDeleted = false)
     {
         return await dbContext.Orders
-            .AsNoTracking()
             .ToListAsync();
     }
 

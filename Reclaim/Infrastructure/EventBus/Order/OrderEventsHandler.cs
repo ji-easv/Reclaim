@@ -41,6 +41,7 @@ public class OrderEventsHandler(IDomainEventBus domainEventBus, IServiceProvider
         var readRepository = scope.ServiceProvider.GetService<IOrderReadRepository>();
         var existingEntity = await readRepository.GetByIdAsync(arg.OrderId);
         existingEntity!.IsDeleted = true;
+        existingEntity.UpdatedAt = arg.DeletedAt;
         await readRepository.UpdateAsync(existingEntity);
     }
     

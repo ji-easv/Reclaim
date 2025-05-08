@@ -42,6 +42,7 @@ public class ReviewEventsHandler(IDomainEventBus domainEventBus, IServiceProvide
         var readRepository = scope.ServiceProvider.GetService<IReviewReadRepository>();
         var existingEntity = await readRepository.GetByIdAsync(arg.ReviewId);
         existingEntity.IsDeleted = true;
+        existingEntity.UpdatedAt = arg.DeletedAt;
         await readRepository.UpdateAsync(existingEntity);
     }
 }

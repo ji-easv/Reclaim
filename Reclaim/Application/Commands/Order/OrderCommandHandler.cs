@@ -17,6 +17,7 @@ public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository o
         await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
         var orderId = ObjectId.GenerateNewId().ToString();
         var listings = new List<ListingWriteEntity>();
+        var totalPrice = 0m;
         
         foreach (var listingId in command.Listings)
         {
@@ -29,6 +30,8 @@ public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository o
             {
                 throw new AlreadyBoughtException($"Listing with ID {listingId} is already bought.");
             }
+
+            totalPrice += listing.Price;
             listing.OrderId = orderId;
             listings.Add(listing);
         }
@@ -38,7 +41,8 @@ public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository o
             Id = orderId,
             UserId = command.UserId,
             Listings = listings,
-            IsDeleted = false
+            IsDeleted = false,
+            TotalPrice = totalPrice
         };
         
         var createdOrder = await orderWriteRepository.AddAsync(order);
