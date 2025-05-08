@@ -26,16 +26,47 @@ Key design considerations include:
 ## Design & Implementation
 You must clearly outline and justify your design choices addressing the following questions:
 
-1. **Database Selection**:
-   - Identify and justify the selection of databases (relational and NoSQL) for various parts of your application. 
-
-2. **Data Schema and Storage Strategy**:
-   - Define the data models and storage strategies you will use. 
+1. ### Database Selection, Data Shema and Storage Strategy:
+   - Identify and justify the selection of databases (relational and NoSQL) for various parts of your application.
+   - Define the data models and storage strategies you will use.
    - Clearly document how you will store and manage different kinds of data (listings, user profiles, orders, reviews).
+
+As is a common practice in the CQRS pattern, we have chosen to use two different databases for the read and write sides of the application. 
+This allows optimization of each database for its specific purpose, and allows us to use different technologies for each side.
+
+#### Write:
+For the write side, we have chosen a traditional relational database, `PostgreSQL`, which allows us to use transactions and ensure data integrity. 
+The main benefits of using a relational database for this purpose include:
+- Performing data validation and ensuring data integrity through the use of foreign keys and constraints.
+  - We can ensure that a listing cannot be created without a valid user, and that a review cannot be created without a valid listing and user.
+- Using transactions to ensure that all operations are completed successfully or none at all, which is crucial for maintaining data consistency.
+  - For example, when a user places an order, we need to ensure that the order is created, the listings are updated, and cannot be bought by another user.
 
 ![db-schema.png](db-schema.png)
 
-3. **Integration of Cloud Storage**:
+#### Read:
+As for read operations, we went with `MongoDB`, which is a NoSQL database that allows for flexible schema design and rapid scalability.
+Since it is a document-based database, it allows quicker retrieval of data, especially when we leverage the denormalization of data.
+That is why there are four collections in the database:
+```csharp
+    public IMongoCollection<ListingReadEntity> Listings { get; }
+    public IMongoCollection<OrderReadEntity> Orders { get; }
+    public IMongoCollection<UserReadEntity> Users { get; }
+    public IMongoCollection<ReviewReadEntity> Reviews { get; }
+```
+
+The `Users` collections is, however, not utilized for access to users, but rather just to allow users to exist without having a listing or order, and 
+to allow referencing users in the `Review` and `Order` collections. We thought these shouldn't be stored on the `User` collection, but rather have their own collections.
+
+It could be argued that the reviews could be stored in the `User` collection, since they are related to the user, but that probably depends on the use case and how the data is accessed (mainly the UI design).
+This would also raise the question, do we store the reviews written **for** the user, or the reviews written **by** the user? There could be arguments for both, and it would depend on the use case.
+Rather than that, we have decided to denormalize the data in the `Review` collection, and store the user that wrote the review, as that would enable fetching the whole comment/review in one go.
+
+The `Listings` collection is used to store the listings, and is denormalized to include the user that created the listing, as well as the media (images), so all relevant data can be retrieved in one lookup.
+The `Orders` collection is used to store the orders, and is denormalized to include the listings that were ordered. The user is not included, as the user would only be able to see their own orders, 
+so if they're logged in, we most likely already have the user data that we need.
+
+3. ### Integration of Cloud Storage:
    - Describe how you will integrate cloud storage for images and other media. 
    - Include a clear explanation of interactions between cloud storage and your databases.
 
@@ -47,7 +78,7 @@ When the images are retrieved, the application creates a presigned URL for the i
 On the write side, there is a simple`1:0...*` relationship between [Media](Reclaim/Domain/Entities/Write/MediaWriteEntity.cs) and the [Listing](Reclaim/Domain/Entities/Write/ListingWriteEntity.cs).
 In terms of the read side, the media do not have their own collection. Instead, they are stored on the [Listing](Reclaim/Domain/Entities/Read/ListingReadEntity.cs) for quick retrieval.
 
-4. **Caching Strategy**:
+4. ### Caching Strategy:
    - Define your caching approach, including technologies used, cache invalidation strategy, and which data will be cached.
 
 `Redis` is used as a caching solution. The cache is used to store frequently accessed data, such as item listings, and orders. 
@@ -100,10 +131,12 @@ public async Task<ListingReadEntity?> GetByIdAsync(string id, bool includeDelete
 The cache is invalidated through the use of domain events and corresponding handlers, like the [listing event handler](Reclaim/Infrastructure/EventBus/Listing/ListingEventsHandler.cs) 
 that is responsible for listening to events published by the [ListingWriteService](Reclaim/Application/Services/Implementations/ListingService.cs) and invalidating the cache when a listing is modified.
 
-
-5. **CQRS Implementation**:
+5. ### CQRS Implementation:
    - Explain your approach to separating read and write operations, if applicable. 
    - Clarify how this impacts the application's scalability and complexity.
    
-6. **Transaction Management**:
+6. ### Transaction Management:
    - Detail your approach to ensuring transactional integrity, particularly in scenarios such as orders and listing updates.
+
+Unit of work pattern
+Different isolation levels
