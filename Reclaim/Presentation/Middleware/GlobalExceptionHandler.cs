@@ -30,6 +30,11 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                     title = "InsertionConflictException";
                     detail = ex.Message;
                     break;
+                case InvalidFileException ex:
+                    statusCode = StatusCodes.Status400BadRequest;
+                    title = "InvalidFileException";
+                    detail = ex.Message;
+                    break;
                 default:
                     statusCode = StatusCodes.Status500InternalServerError;
                     title = "CustomExceptionNotImplemented";

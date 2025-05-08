@@ -37,8 +37,19 @@ You must clearly outline and justify your design choices addressing the followin
    - Describe how you will integrate cloud storage for images and other media. 
    - Include a clear explanation of interactions between cloud storage and your databases.
 
+MinIO is used as an S3 bucket for storing images, which are uploaded by users. This is because databases are not famous for their performance in storing large binary files. 
+Therefore, the database is used to store metadata about the images, and the generated object key, which references the image in the MinIO bucket. 
+
+When the images are retrieved, the application creates a presigned URL for the image, allowing users to access it. The URL is only valid for a limited time, ensuring security and privacy.
+
+On the write side, there is a simple`1:0...*` relationship between [Media](Reclaim/Domain/Entities/Write/MediaWriteEntity.cs) and the [Listing](Reclaim/Domain/Entities/Write/ListingWriteEntity.cs).
+In terms of the read side, the media do not have their own collection. Instead, they are stored on the [Listing](Reclaim/Domain/Entities/Read/ListingReadEntity.cs) for quick retrieval.
+
 4. **Caching Strategy**:
    - Define your caching approach, including technologies used, cache invalidation strategy, and which data will be cached.
+
+Redis is used as a caching solution. The cache is used to store frequently accessed data, such as item listings, and orders. 
+We tried to map out the data that would most likely be accessed frequently (e.g., the latest listings, ) and store that in the cache.
 
 5. **CQRS Implementation**:
    - Explain your approach to separating read and write operations, if applicable. 

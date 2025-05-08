@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Reclaim.Domain.Entities.Write;
+using Reclaim.Domain.Exceptions;
 using Reclaim.Infrastructure.Repositories.S3;
 using Reclaim.Infrastructure.Repositories.Write.Interfaces;
 using Reclaim.Infrastructure.UnitOfWork;
@@ -14,6 +15,8 @@ public class MediaCommandHandler(
     : ICommandHandler<CreateMediaCommand, List<MediaWriteEntity>>,
         ICommandHandler<DeleteMediaCommand, List<MediaWriteEntity>>
 {
+    private readonly string[] ValidImageTypes = ["image/jpeg", "image/png", "image/gif"];
+    
     public async Task<List<MediaWriteEntity>> HandleAsync(CreateMediaCommand command)
     {
         await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -21,6 +24,12 @@ public class MediaCommandHandler(
 
         foreach (var file in command.Files)
         {
+            // Check if the file is a valid image
+            if (file.Length == 0 || !ValidImageTypes.Contains(file.ContentType))
+            {
+                throw new InvalidFileException("Invalid file, only images are allowed");
+            }
+            
             var s3Response = await objectStorageRepository.UploadFileAsync(
                 file.FileName,
                 file.OpenReadStream(),
