@@ -68,8 +68,6 @@ public class OrderCommandHandler(IUnitOfWork unitOfWork, IOrderWriteRepository o
             listings.Add(listing);
         }
         
-        order.UserId = command.UserId;
-        order.Listings = listings;
         order.Status = command.Status;
         order.UpdatedAt = DateTimeOffset.UtcNow;
         
