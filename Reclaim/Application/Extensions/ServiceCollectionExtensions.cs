@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using Minio;
 using Reclaim.Application.Commands.Listing;
 using Reclaim.Application.Commands.Media;
@@ -61,11 +62,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MinIoContext>(_ =>
         {
             var minIoConfig = configuration.GetSection("MinIo");
+            var proxyHost = minIoConfig["ProxyHost"] ?? throw new ArgumentException("MinIO proxy host is null");
+            var proxyPort = int.Parse(minIoConfig["ProxyPort"] ?? throw new ArgumentException("MinIO proxy port is null")); 
             var minIoClient = new MinioClient()
                 .WithEndpoint(minIoConfig["Endpoint"] ?? throw new ArgumentException("MinIO endpoint is null"))
                 .WithCredentials(
                     minIoConfig["AccessKey"] ?? throw new ArgumentException("MinIO access key is null"),
                     minIoConfig["SecretKey"] ?? throw new ArgumentException("MinIO secret key is null"))
+                .WithProxy(new WebProxy(proxyHost, proxyPort))
                 .Build();
 
             var minIoContext = new MinIoContext(minIoClient);
