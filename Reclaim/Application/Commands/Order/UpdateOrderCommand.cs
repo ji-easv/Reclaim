@@ -12,7 +12,7 @@ public class UpdateOrderCommand : ICommand<OrderWriteEntity>
     [MaxLength(24)]
     public required string UserId { get; set; }
     
-    public required List<ListingWriteEntity> Listings { get; set; } = [];
+    public required List<string> Listings { get; set; } = [];
     
     public required OrderStatus Status { get; set; }
 }
