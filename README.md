@@ -34,8 +34,6 @@ You must clearly outline and justify your design choices addressing the followin
 As is a common practice in the CQRS pattern, we have chosen to use two different databases for the read and write sides of the application. 
 This allows optimization of each database for its specific purpose, and allows us to use different technologies for each side.
 
-![read-db-schema.png](read-db-schema.png)
-
 #### Write:
 For the write side, we have chosen a traditional relational database, `PostgreSQL`, which allows us to use transactions and ensure data integrity. 
 The main benefits of using a relational database for this purpose include:
@@ -67,6 +65,8 @@ Rather than that, we have decided to denormalize the data in the `Review` collec
 The `Listings` collection is used to store the listings, and is denormalized to include the user that created the listing, as well as the media (images), so all relevant data can be retrieved in one lookup.
 The `Orders` collection is used to store the orders, and is denormalized to include the listings that were ordered. The user is not included, as the user would only be able to see their own orders, 
 so if they're logged in, we most likely already have the user data that we need.
+
+![read-db-schema.png](read-db-schema.png)
 
 3. ### Integration of Cloud Storage:
    - Describe how you will integrate cloud storage for images and other media. 
