@@ -19,7 +19,6 @@ public class OrderReadMongoRepository(MongoDbContext mongoDbContext) : IOrderRea
         return await mongoDbContext.Orders
             .Find(order => order.UserId.ToString() == userId)
             .ToListAsync();
-        
     }
 
     public async Task<OrderReadEntity> AddAsync(OrderReadEntity entity)

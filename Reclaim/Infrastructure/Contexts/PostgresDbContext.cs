@@ -26,6 +26,10 @@ public class PostgresDbContext(DbContextOptions<PostgresDbContext> options) : Db
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(e => e.Media)
+                .WithOne()
+                .HasForeignKey(l => l.ListingId);
         });
 
         modelBuilder.Entity<OrderWriteEntity>(entity =>
@@ -60,10 +64,6 @@ public class PostgresDbContext(DbContextOptions<PostgresDbContext> options) : Db
         modelBuilder.Entity<MediaWriteEntity>(entity =>
         {
             entity.HasKey(e => e.Id);
-
-            entity.HasOne(e => e.Listing)
-                .WithMany()
-                .HasForeignKey(e => e.ListingId);
         });
 
         base.OnModelCreating(modelBuilder);

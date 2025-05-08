@@ -23,14 +23,26 @@ public class OrderWriteEfRepository(PostgresDbContext dbContext) : IOrderWriteRe
     {
         var result = await dbContext.Orders.AddAsync(entity);
         await dbContext.SaveChangesAsync();
-        return result.Entity;
+        
+        var orderWithListings = await dbContext.Orders
+            .Include(o => o.Listings)
+            .ThenInclude(l => l.Media)
+            .FirstAsync(o => o.Id == result.Entity.Id);
+        
+        return orderWithListings;
     }
 
     public async Task<OrderWriteEntity> UpdateAsync(OrderWriteEntity entity)
     {
         var result = dbContext.Orders.Update(entity);
         await dbContext.SaveChangesAsync();
-        return result.Entity;
+        
+        var orderWithListings = await dbContext.Orders
+            .Include(o => o.Listings)
+            .ThenInclude(l => l.Media)
+            .FirstAsync(o => o.Id == result.Entity.Id);
+        
+        return orderWithListings;
     }
 
     public async Task<OrderWriteEntity> DeleteAsync(OrderWriteEntity entity)

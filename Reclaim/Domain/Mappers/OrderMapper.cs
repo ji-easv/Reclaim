@@ -17,11 +17,12 @@ public static class OrderMapper
             Status = orderWriteEntity.Status,
             CreatedAt = orderWriteEntity.CreatedAt,
             UpdatedAt = orderWriteEntity.UpdatedAt,
-            IsDeleted = orderWriteEntity.IsDeleted
+            IsDeleted = orderWriteEntity.IsDeleted,
+            Listings = orderWriteEntity.Listings.Select(l => l.ToDto()).ToList()
         };
     }
 
-    public static OrderGetDto ToGetDto(this OrderReadEntity orderReadEntity)
+    public static OrderGetDto ToGetDto(this OrderReadEntity orderReadEntity, List<ListingGetDto> listingDtos)
     {
         return new OrderGetDto
         {
@@ -31,7 +32,8 @@ public static class OrderMapper
             Status = orderReadEntity.Status,
             CreatedAt = orderReadEntity.CreatedAt,
             UpdatedAt = orderReadEntity.UpdatedAt,
-            IsDeleted = orderReadEntity.IsDeleted
+            IsDeleted = orderReadEntity.IsDeleted,
+            Listings = listingDtos
         };
     }
 
@@ -45,7 +47,8 @@ public static class OrderMapper
             Status = orderWriteEntity.Status,
             CreatedAt = orderWriteEntity.CreatedAt,
             UpdatedAt = orderWriteEntity.UpdatedAt,
-            IsDeleted = orderWriteEntity.IsDeleted
+            IsDeleted = orderWriteEntity.IsDeleted,
+            Listings = orderWriteEntity.Listings.Select(l => l.ToReadEntity()).ToList()
         };
     }
 }

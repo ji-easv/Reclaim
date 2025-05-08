@@ -12,4 +12,5 @@ public class OrderGetDto
     public required decimal TotalPrice { get; set; }
     
     public required bool IsDeleted { get; set; }
+    public List<ListingGetDto> Listings { get; set; } = [];
 }

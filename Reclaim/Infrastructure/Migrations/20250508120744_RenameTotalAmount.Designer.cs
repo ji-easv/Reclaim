@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Reclaim.Infrastructure.Contexts;
@@ -11,9 +12,11 @@ using Reclaim.Infrastructure.Contexts;
 namespace Reclaim.Infrastructure.Migrations
 {
     [DbContext(typeof(PostgresDbContext))]
-    partial class PostgresDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250508120744_RenameTotalAmount")]
+    partial class RenameTotalAmount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,9 +84,6 @@ namespace Reclaim.Infrastructure.Migrations
                         .HasMaxLength(24)
                         .HasColumnType("character varying(24)");
 
-                    b.Property<string>("ListingId1")
-                        .HasColumnType("character varying(24)");
-
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasColumnType("text");
@@ -97,8 +97,6 @@ namespace Reclaim.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ListingId");
-
-                    b.HasIndex("ListingId1");
 
                     b.ToTable("Media");
                 });
@@ -225,15 +223,11 @@ namespace Reclaim.Infrastructure.Migrations
 
             modelBuilder.Entity("Reclaim.Domain.Entities.Write.MediaWriteEntity", b =>
                 {
-                    b.HasOne("Reclaim.Domain.Entities.Write.ListingWriteEntity", null)
-                        .WithMany("Media")
+                    b.HasOne("Reclaim.Domain.Entities.Write.ListingWriteEntity", "Listing")
+                        .WithMany()
                         .HasForeignKey("ListingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Reclaim.Domain.Entities.Write.ListingWriteEntity", "Listing")
-                        .WithMany()
-                        .HasForeignKey("ListingId1");
 
                     b.Navigation("Listing");
                 });
@@ -264,11 +258,6 @@ namespace Reclaim.Infrastructure.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Seller");
-                });
-
-            modelBuilder.Entity("Reclaim.Domain.Entities.Write.ListingWriteEntity", b =>
-                {
-                    b.Navigation("Media");
                 });
 
             modelBuilder.Entity("Reclaim.Domain.Entities.Write.OrderWriteEntity", b =>

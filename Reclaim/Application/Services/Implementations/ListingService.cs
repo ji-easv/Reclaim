@@ -1,10 +1,10 @@
 ﻿using Reclaim.Application.Commands.Listing;
+using Reclaim.Application.Commands.Media;
 using Reclaim.Application.Queries.Listing;
 using Reclaim.Application.Queries.Media;
 using Reclaim.Application.Services.Interfaces;
 using Reclaim.Domain.DTOs;
 using Reclaim.Domain.Entities.Read;
-using Reclaim.Domain.Entities.Write;
 using Reclaim.Domain.Mappers;
 using Reclaim.Infrastructure.EventBus.EventBus;
 using Reclaim.Infrastructure.EventBus.Listing;
@@ -45,6 +45,16 @@ public class ListingService(
     public async Task<ListingGetDto> DeleteListingAsync(DeleteListingCommand command)
     {
         var listing = await commandHandler.HandleAsync(command);
+        var media = await mediaService.GetMediaForListingAsync(new GetMediaForListingQuery
+        {
+            ListingId = command.Id
+        });
+        
+        await mediaService.DeleteMediaAsync(new DeleteMediaCommand
+        {
+            MediaIds = media.Select(m => m.Id).ToList()
+        });
+    
         var listingDto = listing.ToDto();
         await domainEventBus.Publish(new ListingDeletedEvent
         {
@@ -89,7 +99,7 @@ public class ListingService(
         return listingDtos;
     }
     
-    private async Task<List<MediaGetDto>> GetSignedMediaAsync(List<MediaReadEntity> media)
+    public async Task<List<MediaGetDto>> GetSignedMediaAsync(List<MediaReadEntity> media)
     {
         var signedMedia = new List<MediaGetDto>();
         foreach (var mediaItem in media)

@@ -17,6 +17,11 @@ public class ReviewCommandHandler(
 {
     public async Task<ReviewWriteEntity> HandleAsync(CreateReviewCommand command)
     {
+        if (command.AuthorId == command.SellerId)
+        {
+            throw new CustomValidationException("Author and seller cannot be the same.");
+        }
+        
         await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
         // Validate users exist
@@ -33,9 +38,9 @@ public class ReviewCommandHandler(
         }
 
         // Validate rating range
-        if (command.Rating < 1 || command.Rating > 5)
+        if (command.Rating is < 1 or > 5)
         {
-            throw new ValidationException($"Rating must be between 1 and 5.");
+            throw new CustomValidationException($"Rating must be between 1 and 5.");
         }
 
         // Create the review entity
@@ -85,9 +90,9 @@ public class ReviewCommandHandler(
         }
 
         // Validate rating range
-        if (command.Rating < 1 || command.Rating > 5)
+        if (command.Rating is < 1 or > 5)
         {
-            throw new ValidationException($"Rating must be between 1 and 5.");
+            throw new CustomValidationException($"Rating must be between 1 and 5.");
         }
 
         // Update the review

@@ -65,4 +65,20 @@ public static class ListingMapper
             Media = media.Select(m => m.ToReadEntity()).ToList()
         };
     }
+    
+    public static ListingReadEntity ToReadEntity(this ListingWriteEntity writeEntity)
+    {
+        return new ListingReadEntity
+        {
+            Id = ObjectId.Parse(writeEntity.Id),
+            Title = writeEntity.Title,
+            Content = writeEntity.Content,
+            Price = writeEntity.Price,
+            CreatedAt = writeEntity.CreatedAt,
+            UpdatedAt = writeEntity.UpdatedAt,
+            IsDeleted = writeEntity.IsDeleted,
+            User = writeEntity.User?.ToReadEntity() ?? throw new InvalidOperationException("User cannot be null"),
+            Media = writeEntity.Media.Select(m => m.ToReadEntity()).ToList()
+        };
+    }
 }
