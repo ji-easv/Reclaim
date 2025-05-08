@@ -30,6 +30,12 @@ public class OrderCommandHandler(
             {
                 throw new NotFoundException($"Listing with ID {listingId} not found.");
             }
+            
+            if (listing.UserId == command.UserId)
+            {
+                throw new CustomValidationException($"User {command.UserId} cannot buy their own listing.");
+            }
+            
             if (listing.OrderId != null)
             {
                 throw new AlreadyBoughtException($"Listing with ID {listingId} is already bought.");

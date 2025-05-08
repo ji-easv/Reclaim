@@ -40,6 +40,11 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                     title = "AlreadyBoughtException";
                     detail = ex.Message;
                     break;
+                case CustomValidationException ex:
+                    statusCode = StatusCodes.Status400BadRequest;
+                    title = "CustomValidationException";
+                    detail = ex.Message;
+                    break;
                 default:
                     statusCode = StatusCodes.Status500InternalServerError;
                     title = "CustomExceptionNotImplemented";
