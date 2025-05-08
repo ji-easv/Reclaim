@@ -1,4 +1,5 @@
-﻿using Reclaim.Domain.Entities.Write;
+﻿using Microsoft.EntityFrameworkCore;
+using Reclaim.Domain.Entities.Write;
 using Reclaim.Infrastructure.Contexts;
 using Reclaim.Infrastructure.Repositories.Write.Interfaces;
 
@@ -6,28 +7,39 @@ namespace Reclaim.Infrastructure.Repositories.Write.Implementations;
 
 public class OrderWriteEfRepository(PostgresDbContext dbContext) : IOrderWriteRepository
 {
-    public Task<OrderWriteEntity?> GetByIdAsync(string id, bool includeDeleted = false)
+    public async Task<OrderWriteEntity?> GetByIdAsync(string id, bool includeDeleted = false)
     {
-        throw new NotImplementedException();
+        return await dbContext.Orders
+            .FirstOrDefaultAsync(x => x.Id == id && (includeDeleted || !x.IsDeleted));
     }
 
-    public Task<IEnumerable<OrderWriteEntity>> GetAllAsync(bool includeDeleted = false)
+    public async Task<IEnumerable<OrderWriteEntity>> GetAllAsync(bool includeDeleted = false)
     {
-        throw new NotImplementedException();
+        return await dbContext.Orders
+            .ToListAsync();
     }
 
-    public Task<OrderWriteEntity> AddAsync(OrderWriteEntity entity)
+    public async Task<OrderWriteEntity> AddAsync(OrderWriteEntity entity)
     {
-        throw new NotImplementedException();
+        var result = await dbContext.Orders.AddAsync(entity);
+        await dbContext.SaveChangesAsync();
+        return result.Entity;
     }
 
-    public Task<OrderWriteEntity> UpdateAsync(OrderWriteEntity entity)
+    public async Task<OrderWriteEntity> UpdateAsync(OrderWriteEntity entity)
     {
-        throw new NotImplementedException();
+        var result = dbContext.Orders.Update(entity);
+        await dbContext.SaveChangesAsync();
+        return result.Entity;
     }
 
-    public Task<OrderWriteEntity> DeleteAsync(OrderWriteEntity entity)
+    public async Task<OrderWriteEntity> DeleteAsync(OrderWriteEntity entity)
     {
-        throw new NotImplementedException();
+        entity.IsDeleted = true;
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+        
+        dbContext.Orders.Update(entity);
+        await dbContext.SaveChangesAsync();
+        return entity;
     }
 }

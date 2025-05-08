@@ -8,7 +8,7 @@ public class OrderWriteEntity
 {
     [MaxLength(24)]
     public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
-    public decimal TotalAmount { get; set; }
+    public required decimal TotalPrice { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }

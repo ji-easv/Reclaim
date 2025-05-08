@@ -9,4 +9,5 @@ public class InsertionConflictException : AppException
     public InsertionConflictException(string message, Exception innerException) : base(message, innerException)
     {
     }
+    
 }
