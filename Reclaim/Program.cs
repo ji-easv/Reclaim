@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Reclaim.Application.Extensions;
+using Reclaim.Infrastructure.Contexts;
 using Reclaim.Infrastructure.UnitOfWork;
 using Reclaim.Presentation.Apis;
 using Reclaim.Presentation.Middleware;
@@ -23,12 +25,19 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<PostgresDbContext>();
+    dbContext.Database.Migrate();
+}
+
 app.UseHttpsRedirection();
 
 app.AddOrderApi();
 app.AddListingApi();
 app.AddReviewApi();
 app.AddUserApi();
+app.AddMediaApi();
 
 app.UseExceptionHandler();
 

@@ -7,13 +7,15 @@
     ports:
       - "8080:8080"
     environment:
-      ConnectionStrings__MongoDb: mongodb://mongo-db-1:27017
-      ConnectionStrings__MongoDbDatabaseName: ReclaimDatabase
+      ConnectionStrings__MongoDb: mongodb://mongo-db:27017
+      ConnectionStrings__MongoDbDatabaseName: ReclaimDb
       ConnectionStrings__Redis: redis:6379
-      ConnectionStrings__Postgres: Host=postgres-db;Port=5432;Username=postgres;Password=postgres;Database=postgres
-      MinIO__Endpoint: minio:9000
+      ConnectionStrings__Postgres: Host=postgres-db;Port=5432;Username=postgres;Password=postgres;Database=reclaim_db
+      MinIO__Endpoint: localhost:9000
       MinIO__AccessKey: ROOT
       MinIO__SecretKey: PASSWORD
+      MinIO__ProxyHost: minio
+      MinIO__ProxyPort: 9000
     depends_on:
       mongo-db:
         condition: service_healthy
