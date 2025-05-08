@@ -30,6 +30,11 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                     title = "InsertionConflictException";
                     detail = ex.Message;
                     break;
+                case AlreadyBoughtException  ex:  
+                    statusCode = StatusCodes.Status409Conflict;
+                    title = "AlreadyBoughtException";
+                    detail = ex.Message;
+                    break;
                 default:
                     statusCode = StatusCodes.Status500InternalServerError;
                     title = "CustomExceptionNotImplemented";
