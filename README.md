@@ -189,7 +189,161 @@ Eventual consistency must also be managed between the two sides, requiring caref
 For example, when a new order is created, an event is published to update the read side with the new order information.
 
 6. ### Transaction Management:
-   - Detail your approach to ensuring transactional integrity, particularly in scenarios such as orders and listing updates.
 
-Unit of work pattern
-Different isolation levels
+To ensure data consistency throughout our application, we implemented a robust transaction management strategy. 
+This was particularly critical for marketplace operations where multiple database changes must succeed or fail together.
+
+#### Unit of Work Pattern
+
+We built our transaction management around the Unit of Work pattern with a straightforward interface:
+
+```csharp
+public interface IUnitOfWork
+{
+    Task BeginTransactionAsync(IsolationLevel isolationLevel);
+    Task CommitAsync();
+    Task RollbackAsync();
+}
+```
+
+
+Our PostgreSQL implementation leverages Entity Framework Core's transaction capabilities:
+
+```csharp
+public class UnitOfWork(PostgresDbContext context) : IUnitOfWork, IDisposable
+{
+    private IDbContextTransaction? _transaction;
+
+    public async Task BeginTransactionAsync(IsolationLevel isolationLevel)
+    {
+        _transaction = await context.Database.BeginTransactionAsync(isolationLevel);
+    }
+
+    public async Task CommitAsync()
+    {
+        try
+        {
+            await context.SaveChangesAsync();
+            await _transaction!.CommitAsync();
+        }
+        finally
+        {
+            await _transaction!.DisposeAsync();
+            _transaction = null;
+        }
+    }
+
+    public async Task RollbackAsync()
+    {
+        try
+        {
+            await _transaction!.RollbackAsync();
+        }
+        finally
+        {
+            await _transaction!.DisposeAsync();
+            _transaction = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        _transaction?.Dispose();
+    }
+}
+```
+
+
+#### Strategic Transaction Usage
+
+Transactions are integrated directly into our command handlers, which aligns perfectly with our CQRS architecture. 
+Each command handler establishes appropriate isolation levels based on the operation's requirements:
+
+**1. Creating Orders (Using Serializable Isolation)**
+
+The `OrderCommandHandler` demonstrates our most complex transaction scenario:
+
+```csharp
+public async Task<OrderWriteEntity> HandleAsync(CreateOrderCommand command)
+{
+    await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+    var orderId = ObjectId.GenerateNewId().ToString();
+    var listings = new List<ListingWriteEntity>();
+    var totalPrice = 0m;
+    
+    foreach (var listingId in command.Listings)
+    {
+        var listing = await listingWriteRepository.GetByIdAsync(listingId);
+        if (listing is null)
+        {
+            throw new NotFoundException($"Listing with ID {listingId} not found.");
+        }
+        
+        if (listing.UserId == command.UserId)
+        {
+            throw new CustomValidationException($"User {command.UserId} cannot buy their own listing.");
+        }
+        
+        if (listing.OrderId != null)
+        {
+            throw new AlreadyBoughtException($"Listing with ID {listingId} is already bought.");
+        }
+        
+        totalPrice += listing.Price;
+        listing.OrderId = orderId;
+        listings.Add(listing);
+    }
+    
+    var order = new OrderWriteEntity
+    {
+        Id = orderId,
+        UserId = command.UserId,
+        Listings = listings,
+        IsDeleted = false,
+        TotalPrice = totalPrice
+    };
+    
+    var createdOrder = await orderWriteRepository.AddAsync(order);
+    await unitOfWork.CommitAsync();
+    return createdOrder;
+}
+```
+
+
+We use `Serializable` isolation here to prevent race conditions where multiple users might try to purchase the same listing concurrently.
+
+**2. User Management (Using ReadCommitted Isolation)**
+
+For operations like user creation where concurrent conflicts are less likely:
+
+```csharp
+public async Task<UserWriteEntity> HandleAsync(CreateUserCommand command)
+{
+   await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+   var existingUser = await userWriteRepository.GetByEmailAsync(command.Email);
+   if (existingUser is not null) { 
+       throw new InsertionConflictException($"User with email {command.Email} already exists.");
+   }
+   
+   var user = new UserWriteEntity { 
+       Name = command.Name, 
+       Email = command.Email, 
+       IsDeleted = false
+   };
+   
+   var createdUser = await userWriteRepository.AddAsync(user);
+   await unitOfWork.CommitAsync();
+   return createdUser;
+}
+```
+
+
+#### Benefits of Our Approach
+
+Our transaction management strategy has delivered several concrete benefits:
+
+1. **Consistent Data Integrity**: We ensure that when users place orders, the entire process (checking availability, marking listings as sold, and creating the order record) either fully completes or fully rolls back.
+
+2. **Natural CQRS Integration**: Transactions are applied exclusively on the write side, maintaining the clean separation in our CQRS architecture.
+
+3. **Clean Error Handling**: When exceptions occur, our rollback mechanism ensures the database remains in a consistent state, simplifying error recovery.
