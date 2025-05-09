@@ -134,9 +134,60 @@ The cache is invalidated through the use of domain events and corresponding hand
 that is responsible for listening to events published by the [ListingWriteService](Reclaim/Application/Services/Implementations/ListingService.cs) and invalidating the cache when a listing is modified.
 
 5. ### CQRS Implementation:
-   - Explain your approach to separating read and write operations, if applicable. 
+   - Explain your approach to separating read and write operations, if applicable.
    - Clarify how this impacts the application's scalability and complexity.
-   
+
+Our implementation follows the Command Query Responsibility Segregation (CQRS) pattern by strictly separating read and write operations throughout the application architecture.
+We have made commands which are responsible for write operations, and queries which are responsible for read operations.
+#### Command/Query Separation
+We've created distinct command and query objects in the application layer:
+- **Commands**: Represent write operations like `CreateOrderCommand`, `UpdateOrderCommand`, and `DeleteOrderCommand`
+- ```csharp
+  public class CreateOrderCommand : ICommand<OrderWriteEntity>{
+  [MaxLength(24)]
+  public required string UserId { get; set; }
+
+  public required List<string> Listings { get; set; } = [];
+  }
+   ```
+- **Queries**: Represent read operations like `GetOrderByIdQuery` and `GetOrdersByUserIdQuery`
+- ```csharp
+  public class GetOrderByIdQuery : IQuery<OrderReadEntity>
+  {
+  public required string OrderId { get; set; }
+  }
+    ```
+  Then these are mapped to the corresponding command and query handlers, which are responsible for executing the operations.
+In here we can use the unit of work pattern to ensure that all operations are executed in a single transaction, and that the data is consistent.
+For instance when we are doing write operations for update and creating orders, we set the isolation level to Serializable, which makes sure that no other transactions can read or write to the data until the transaction is completed.
+In this way we make sure the same order is not created twice, and that the data is consistent.
+
+#### API Layer Implementation
+Our API endpoints follow this separation as demonstrated in the OrderApi:
+- **Write operations**: POST, PUT, and DELETE endpoints that accept command objects
+- **Read operations**: GET endpoints that use query objects
+
+Example from OrderApi:
+```csharp
+// Write operation
+api.MapPost("/", CreateOrderAsync)
+    .WithName("CreateOrder");
+
+// Read operation
+api.MapGet("/{orderId:length(24)}", GetOrderByIdAsync)
+    .WithName("GetOrderById");
+ ```
+
+#### Scalability and Complexity
+**Scalability**: By separating read and write operations, we can independently scale the read and write sides of the application. 
+For example, the read side can be optimized for fast data retrieval using caching and denormalized data, while the write side ensures data integrity with transactional operations.
+
+**Complexity**: This approach introduces additional complexity, as it requires maintaining separate models, databases, and handlers for the read and write sides. 
+Eventual consistency must also be managed between the two sides, requiring careful design and implementation of synchronization mechanisms.
+
+**Eventual Consistency**: We ensure that the read side is eventually consistent with the write side by using domain events to synchronize data between the two sides. 
+For example, when a new order is created, an event is published to update the read side with the new order information.
+
 6. ### Transaction Management:
 
 To ensure data consistency throughout our application, we implemented a robust transaction management strategy. 
