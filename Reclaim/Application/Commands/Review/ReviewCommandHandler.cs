@@ -17,14 +17,14 @@ public class ReviewCommandHandler(
 {
     public async Task<ReviewWriteEntity> HandleAsync(CreateReviewCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
         try
         {
             if (command.AuthorId == command.SellerId)
             {
                 throw new CustomValidationException("Author and seller cannot be the same.");
             }
-
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
             // Validate users exist
             var author = await userWriteRepository.GetByIdAsync(command.AuthorId);
@@ -70,10 +70,10 @@ public class ReviewCommandHandler(
 
     public async Task<ReviewWriteEntity> HandleAsync(DeleteReviewCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
-
             // Get the review
             var review = await reviewWriteRepository.GetByIdAsync(command.ReviewId);
             if (review is null)
@@ -96,10 +96,10 @@ public class ReviewCommandHandler(
 
     public async Task<ReviewWriteEntity> HandleAsync(UpdateReviewCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
-
             // Get the review
             var review = await reviewWriteRepository.GetByIdAsync(command.ReviewId);
             if (review is null)

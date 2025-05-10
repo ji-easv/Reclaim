@@ -18,9 +18,10 @@ public class ListingCommandHandler(
 {
     public async Task<ListingWriteEntity> HandleAsync(CreateListingCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
             var user = await userWriteRepository.GetByIdAsync(command.UserId);
             if (user == null)
             {
@@ -40,9 +41,10 @@ public class ListingCommandHandler(
 
     public async Task<ListingWriteEntity> HandleAsync(DeleteListingCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
             var listing = await listingWriteRepository.GetByIdAsync(command.Id);
             if (listing == null)
             {
@@ -62,9 +64,10 @@ public class ListingCommandHandler(
 
     public async Task<ListingWriteEntity> HandleAsync(UpdateListingCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
             var listing = await listingWriteRepository.GetByIdAsync(command.Id);
             if (listing == null)
             {

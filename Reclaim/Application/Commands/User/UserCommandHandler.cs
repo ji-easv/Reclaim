@@ -16,9 +16,10 @@ public class UserCommandHandler(
 {
     public async Task<UserWriteEntity> HandleAsync(CreateUserCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
             var existingUser = await userWriteRepository.GetByEmailAsync(command.Email);
             if (existingUser is not null)
             {
@@ -45,9 +46,10 @@ public class UserCommandHandler(
 
     public async Task<UserWriteEntity> HandleAsync(DeleteUserCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
             var user = await userWriteRepository.GetByIdAsync(command.UserId);
             if (user is null)
             {
@@ -67,9 +69,10 @@ public class UserCommandHandler(
 
     public async Task<UserWriteEntity> HandleAsync(UpdateUserCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
             var user = await userWriteRepository.GetByIdAsync(command.UserId);
             if (user is null)
             {

@@ -16,60 +16,77 @@ public class MediaCommandHandler(
         ICommandHandler<DeleteMediaCommand, List<MediaWriteEntity>>
 {
     private readonly string[] _validImageTypes = ["image/jpeg", "image/png", "image/gif"];
-    
+
     public async Task<List<MediaWriteEntity>> HandleAsync(CreateMediaCommand command)
     {
         await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         var mediaWriteEntities = new List<MediaWriteEntity>();
 
-        foreach (var file in command.Files)
+        try
         {
-            // Check if the file is a valid image
-            if (file.Length == 0 || !_validImageTypes.Contains(file.ContentType))
+            foreach (var file in command.Files)
             {
-                throw new InvalidFileException("Invalid file, only images are allowed");
-            }
-            
-            var s3Response = await objectStorageRepository.UploadFileAsync(
-                file.FileName,
-                file.OpenReadStream(),
-                file.ContentType
-            );
-
-            mediaWriteEntities.Add(
-                new MediaWriteEntity
+                // Check if the file is a valid image
+                if (file.Length == 0 || !_validImageTypes.Contains(file.ContentType))
                 {
-                    ListingId = command.ListingId,
-                    MimeType = file.ContentType,
-                    SizeBytes = file.Length,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    ObjectKey = s3Response.ObjectKey
-                });
-        }
+                    throw new InvalidFileException("Invalid file, only images are allowed");
+                }
 
-        await mediaWriteRepository.AddRangeAsync(mediaWriteEntities);
-        await unitOfWork.CommitAsync();
-        return mediaWriteEntities;
+                var s3Response = await objectStorageRepository.UploadFileAsync(
+                    file.FileName,
+                    file.OpenReadStream(),
+                    file.ContentType
+                );
+
+                mediaWriteEntities.Add(
+                    new MediaWriteEntity
+                    {
+                        ListingId = command.ListingId,
+                        MimeType = file.ContentType,
+                        SizeBytes = file.Length,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        ObjectKey = s3Response.ObjectKey
+                    });
+            }
+
+            await mediaWriteRepository.AddRangeAsync(mediaWriteEntities);
+            await unitOfWork.CommitAsync();
+            return mediaWriteEntities;
+        }
+        catch
+        {
+            await unitOfWork.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<List<MediaWriteEntity>> HandleAsync(DeleteMediaCommand command)
     {
         await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         var mediaToDelete = new List<MediaWriteEntity>();
-        foreach (var mediaId in command.MediaIds)
+
+        try
         {
-            var mediaWriteEntity = await mediaWriteRepository.GetByIdAsync(mediaId);
-            if (mediaWriteEntity == null)
+            foreach (var mediaId in command.MediaIds)
             {
-                throw new Exception("Media not found");
+                var mediaWriteEntity = await mediaWriteRepository.GetByIdAsync(mediaId);
+                if (mediaWriteEntity == null)
+                {
+                    throw new Exception("Media not found");
+                }
+
+                mediaToDelete.Add(mediaWriteEntity);
+                await objectStorageRepository.DeleteFileAsync(mediaWriteEntity.ObjectKey);
             }
 
-            mediaToDelete.Add(mediaWriteEntity);
-            await objectStorageRepository.DeleteFileAsync(mediaWriteEntity.ObjectKey);
+            await mediaWriteRepository.DeleteRangeAsync(mediaToDelete);
+            await unitOfWork.CommitAsync();
+            return mediaToDelete;
         }
-        
-        await mediaWriteRepository.DeleteRangeAsync(mediaToDelete);
-        await unitOfWork.CommitAsync();
-        return mediaToDelete;
+        catch
+        {
+            await unitOfWork.RollbackAsync();
+            throw;
+        }
     }
 }

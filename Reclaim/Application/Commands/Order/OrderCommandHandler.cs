@@ -18,12 +18,18 @@ public class OrderCommandHandler(
 {
     public async Task<OrderWriteEntity> HandleAsync(CreateOrderCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
             var orderId = ObjectId.GenerateNewId().ToString();
             var listings = new List<ListingWriteEntity>();
             var totalPrice = 0m;
+            
+            if (command.Listings.Count == 0)
+            {
+                throw new CustomValidationException("No listings provided for the order.");
+            }
         
             foreach (var listingId in command.Listings)
             {
@@ -70,9 +76,10 @@ public class OrderCommandHandler(
     
     public async Task<OrderWriteEntity> HandleAsync(UpdateOrderCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
             var order = await orderWriteRepository.GetByIdAsync(command.Id);
         
             if (order is null)
@@ -96,9 +103,10 @@ public class OrderCommandHandler(
     
     public async Task<OrderWriteEntity> HandleAsync(DeleteOrderCommand command)
     {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
         try
         {
-            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
             var order = await orderWriteRepository.GetByIdAsync(command.Id);
             if (order is null)
             {
