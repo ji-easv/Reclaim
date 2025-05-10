@@ -18,75 +18,100 @@ public class OrderCommandHandler(
 {
     public async Task<OrderWriteEntity> HandleAsync(CreateOrderCommand command)
     {
-        await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
-        var orderId = ObjectId.GenerateNewId().ToString();
-        var listings = new List<ListingWriteEntity>();
-        var totalPrice = 0m;
-        
-        foreach (var listingId in command.Listings)
+        try
         {
-            var listing = await listingWriteRepository.GetByIdAsync(listingId);
-            if (listing is null)
+            await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+            var orderId = ObjectId.GenerateNewId().ToString();
+            var listings = new List<ListingWriteEntity>();
+            var totalPrice = 0m;
+        
+            foreach (var listingId in command.Listings)
             {
-                throw new NotFoundException($"Listing with ID {listingId} not found.");
-            }
+                var listing = await listingWriteRepository.GetByIdAsync(listingId);
+                if (listing is null)
+                {
+                    throw new NotFoundException($"Listing with ID {listingId} not found.");
+                }
             
-            if (listing.UserId == command.UserId)
+                if (listing.UserId == command.UserId)
+                {
+                    throw new CustomValidationException($"User {command.UserId} cannot buy their own listing.");
+                }
+            
+                if (listing.OrderId != null)
+                {
+                    throw new AlreadyBoughtException($"Listing with ID {listingId} is already bought.");
+                }
+            
+                totalPrice += listing.Price;
+                listing.OrderId = orderId;
+                listings.Add(listing);
+            }
+        
+            var order = new OrderWriteEntity
             {
-                throw new CustomValidationException($"User {command.UserId} cannot buy their own listing.");
-            }
-            
-            if (listing.OrderId != null)
-            {
-                throw new AlreadyBoughtException($"Listing with ID {listingId} is already bought.");
-            }
-            
-            totalPrice += listing.Price;
-            listing.OrderId = orderId;
-            listings.Add(listing);
+                Id = orderId,
+                UserId = command.UserId,
+                Listings = listings,
+                IsDeleted = false,
+                TotalPrice = totalPrice
+            };
+        
+            var createdOrder = await orderWriteRepository.AddAsync(order);
+            await unitOfWork.CommitAsync();
+            return createdOrder;
+        } 
+        catch
+        {
+            await unitOfWork.RollbackAsync();
+            throw;
         }
-        
-        var order = new OrderWriteEntity
-        {
-            Id = orderId,
-            UserId = command.UserId,
-            Listings = listings,
-            IsDeleted = false,
-            TotalPrice = totalPrice
-        };
-        
-        var createdOrder = await orderWriteRepository.AddAsync(order);
-        await unitOfWork.CommitAsync();
-        return createdOrder;
     }
+    
     public async Task<OrderWriteEntity> HandleAsync(UpdateOrderCommand command)
     {
-        await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
-        var order = await orderWriteRepository.GetByIdAsync(command.Id);
-        
-        if (order is null)
+        try
         {
-            throw new NotFoundException($"Order with ID {command.Id} not found.");
+            await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+            var order = await orderWriteRepository.GetByIdAsync(command.Id);
+        
+            if (order is null)
+            {
+                throw new NotFoundException($"Order with ID {command.Id} not found.");
+            }
+        
+            order.Status = command.Status;
+            order.UpdatedAt = DateTimeOffset.UtcNow;
+        
+            var updatedOrder = await orderWriteRepository.UpdateAsync(order);
+            await unitOfWork.CommitAsync();
+            return updatedOrder;
+        } 
+        catch
+        {
+            await unitOfWork.RollbackAsync();
+            throw;
         }
-        
-        order.Status = command.Status;
-        order.UpdatedAt = DateTimeOffset.UtcNow;
-        
-        var updatedOrder = await orderWriteRepository.UpdateAsync(order);
-        await unitOfWork.CommitAsync();
-        return updatedOrder;
     }
     
     public async Task<OrderWriteEntity> HandleAsync(DeleteOrderCommand command)
     {
-        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
-        var order = await orderWriteRepository.GetByIdAsync(command.Id);
-        if (order is null)
+        try
         {
-            throw new NotFoundException($"Order with ID {command.Id} not found.");
+            await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+            var order = await orderWriteRepository.GetByIdAsync(command.Id);
+            if (order is null)
+            {
+                throw new NotFoundException($"Order with ID {command.Id} not found.");
+            }
+            var deletedEntity = await orderWriteRepository.DeleteAsync(order);
+            await unitOfWork.CommitAsync();
+            return deletedEntity;
+        } 
+        catch
+        {
+            await unitOfWork.RollbackAsync();
+            throw;
         }
-        var deletedEntity = await orderWriteRepository.DeleteAsync(order);
-        await unitOfWork.CommitAsync();
-        return deletedEntity;
     }
 }

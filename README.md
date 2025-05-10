@@ -212,43 +212,31 @@ Our PostgreSQL implementation leverages Entity Framework Core's transaction capa
 ```csharp
 public class UnitOfWork(PostgresDbContext context) : IUnitOfWork, IDisposable
 {
-    private IDbContextTransaction? _transaction;
-
-    public async Task BeginTransactionAsync(IsolationLevel isolationLevel)
+    public void Dispose()
     {
-        _transaction = await context.Database.BeginTransactionAsync(isolationLevel);
+        context.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    public async Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel isolationLevel)
+    {
+        var transaction = await context.Database.BeginTransactionAsync(isolationLevel);
+        return transaction;
     }
 
     public async Task CommitAsync()
     {
-        try
-        {
-            await context.SaveChangesAsync();
-            await _transaction!.CommitAsync();
-        }
-        finally
-        {
-            await _transaction!.DisposeAsync();
-            _transaction = null;
-        }
+        await context.Database.CommitTransactionAsync();
     }
 
     public async Task RollbackAsync()
     {
-        try
-        {
-            await _transaction!.RollbackAsync();
-        }
-        finally
-        {
-            await _transaction!.DisposeAsync();
-            _transaction = null;
-        }
+        await context.Database.RollbackTransactionAsync();
     }
 
-    public void Dispose()
+    public async Task SaveChangesAsync()
     {
-        _transaction?.Dispose();
+        await context.SaveChangesAsync();
     }
 }
 ```
@@ -266,48 +254,58 @@ The `OrderCommandHandler` demonstrates our most complex transaction scenario:
 ```csharp
 public async Task<OrderWriteEntity> HandleAsync(CreateOrderCommand command)
 {
-    await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
-    var orderId = ObjectId.GenerateNewId().ToString();
-    var listings = new List<ListingWriteEntity>();
-    var totalPrice = 0m;
-    
-    foreach (var listingId in command.Listings)
+    try
     {
-        var listing = await listingWriteRepository.GetByIdAsync(listingId);
-        if (listing is null)
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+        var orderId = ObjectId.GenerateNewId().ToString();
+        var listings = new List<ListingWriteEntity>();
+        var totalPrice = 0m;
+    
+        foreach (var listingId in command.Listings)
         {
-            throw new NotFoundException($"Listing with ID {listingId} not found.");
-        }
+            var listing = await listingWriteRepository.GetByIdAsync(listingId);
+            if (listing is null)
+            {
+                throw new NotFoundException($"Listing with ID {listingId} not found.");
+            }
         
-        if (listing.UserId == command.UserId)
+            if (listing.UserId == command.UserId)
+            {
+                throw new CustomValidationException($"User {command.UserId} cannot buy their own listing.");
+            }
+        
+            if (listing.OrderId != null)
+            {
+                throw new AlreadyBoughtException($"Listing with ID {listingId} is already bought.");
+            }
+        
+            totalPrice += listing.Price;
+            listing.OrderId = orderId;
+            listings.Add(listing);
+        }
+    
+        var order = new OrderWriteEntity
         {
-            throw new CustomValidationException($"User {command.UserId} cannot buy their own listing.");
-        }
-        
-        if (listing.OrderId != null)
-        {
-            throw new AlreadyBoughtException($"Listing with ID {listingId} is already bought.");
-        }
-        
-        totalPrice += listing.Price;
-        listing.OrderId = orderId;
-        listings.Add(listing);
+            Id = orderId,
+            UserId = command.UserId,
+            Listings = listings,
+            IsDeleted = false,
+            TotalPrice = totalPrice
+        };
+    
+        var createdOrder = await orderWriteRepository.AddAsync(order);
+        await unitOfWork.CommitAsync();
+        return createdOrder;
+    } 
+    catch
+    {
+        await unitOfWork.RollbackAsync();
+        throw;
     }
-    
-    var order = new OrderWriteEntity
-    {
-        Id = orderId,
-        UserId = command.UserId,
-        Listings = listings,
-        IsDeleted = false,
-        TotalPrice = totalPrice
-    };
-    
-    var createdOrder = await orderWriteRepository.AddAsync(order);
-    await unitOfWork.CommitAsync();
-    return createdOrder;
 }
 ```
+
+In a real-world scenario, we would also have to integrate payment processing here, but for simplicity, we are just creating the order and marking the listings as sold.
 
 
 We use `Serializable` isolation here to prevent race conditions where multiple users might try to purchase the same listing concurrently.
@@ -319,21 +317,31 @@ For operations like user creation where concurrent conflicts are less likely:
 ```csharp
 public async Task<UserWriteEntity> HandleAsync(CreateUserCommand command)
 {
-   await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
-   var existingUser = await userWriteRepository.GetByEmailAsync(command.Email);
-   if (existingUser is not null) { 
-       throw new InsertionConflictException($"User with email {command.Email} already exists.");
-   }
-   
-   var user = new UserWriteEntity { 
-       Name = command.Name, 
-       Email = command.Email, 
-       IsDeleted = false
-   };
-   
-   var createdUser = await userWriteRepository.AddAsync(user);
-   await unitOfWork.CommitAsync();
-   return createdUser;
+    try
+    {
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        var existingUser = await userWriteRepository.GetByEmailAsync(command.Email);
+        if (existingUser is not null)
+        {
+            throw new InsertionConflictException($"User with email {command.Email} already exists.");
+        }
+
+        var user = new UserWriteEntity
+        {
+            Name = command.Name,
+            Email = command.Email,
+            IsDeleted = false
+        };
+
+        var createdUser = await userWriteRepository.AddAsync(user);
+        await unitOfWork.CommitAsync();
+        return createdUser;
+    }
+    catch
+    {
+        await unitOfWork.RollbackAsync();
+        throw;
+    }
 }
 ```
 
